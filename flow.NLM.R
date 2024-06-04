@@ -1,3 +1,4 @@
+rm(list=ls())
 
 library(brms) 
 library(cmdstanr)
@@ -10,10 +11,7 @@ library(ggpubr)
 df <- read.csv( 'data/AR_flux_sites_2021.csv')
 df <-na.omit(df);summary(df)
 
-
-names(df$date)
 df$date <- as.Date(df$Date)
-
 
 # Light Response Curves: #####
 # nee ~ (a1 * PAR * ax)/(a1 * PAR + ax) + r
@@ -276,8 +274,8 @@ TS7.25.trc <-brm( bf(nee ~ a * exp(b*TA), a+b ~ 1, nl=TRUE),
                   prior = priors.TS7.trc , data = TS7.df[which(TS7.df$I.wl == 0.25 & TS7.df$PAR == 0),], 
                   backend = "cmdstanr", iter = 50000, cores =4, seed=101)
 
-summary(TS7.05.trc)
-plot(conditional_effects(TS7.05.trc), points=T)
+summary(TS7.25.trc)
+plot(conditional_effects(TS7.25.trc), points=T)
 
 TS7.00.trc <-brm( bf(nee ~ a * exp(b*TA), a+b ~ 1, nl=TRUE),
                   prior = priors.TS7.trc , data = TS7.df[which(TS7.df$I.wl == 0.00 & TS7.df$PAR == 0),], 
@@ -337,7 +335,7 @@ trc.predictions$TS7.00.err <- predict( TS7.00.trc , newdata=trc.predictions)[,2]
 # files: lrc.predictions, posterior.LRC 
 # models:  'ts1.00, ts1.25, ts1.5, se1.5, se1.75, se1.1.00, TS7.25, TS7.00'
 
-save(trc.predictions, posterior.TRC, lrc.predictions, posterior.LRC ,
+save(trc.predictions, posterior.trc, lrc.predictions, posterior.LRC ,
      ts1.00, ts1.25, ts1.5, se1.5, se1.75, se1.1.00, TS7.25, TS7.00,
      ts1.00.trc, ts1.25.trc, ts1.5.trc, se1.5.trc, se1.75.trc, se1.1.00.trc, 
      TS7.25.trc, TS7.00.trc, file= "data/WZ_NLM_RESULTS.RDATA")
@@ -615,7 +613,7 @@ cc100.lrc.p <- ggplot( data =cc.100 ) +
   xlab(expression(paste( 'PAR (', mu, 'mol m'^-2, 's'^-1, ')' ))) + ylim(-9, 5) +
   scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284" ))+
   scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
-  scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
+  scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5), limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence") +
   scale_linetype_discrete(limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence")+
   theme(legend.position="none",
         panel.background = element_rect("white", "white", linetype=1, color="black"),
@@ -633,17 +631,11 @@ cc.df$site <- factor(cc.df$site, levels=c("TS1", "SE1","TS7"))
 
 
 legend.p <- ggplot( data = cc.df ) + 
-  geom_line( aes( x= PAR, y =Estimate, color=site, linetype=group), size=1) +
-  geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.1 ) +
-  ylab(expression(paste('NEE'[day], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'PAR (', mu, 'mol m'^2, 's'^-1, ')' ))) + ylim(-9, 9) +
-  scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284" ))+
-  scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
+  geom_line( aes( x= PAR, y =Estimate, color=site, linetype=group), size=1) + scale_color_manual(values = c("#000099","#fab255", "#43b284"),labels=c('Freshwater Marl Praire','Brackish Ecotone', 'Saline Scrub Mangrove')) +
   theme(text = element_text(size=20),legend.direction='vertical', 
         legend.text=element_text(size=19)) + 
-  guides(color=guide_legend(title="Site"),
-         linetype=guide_legend(title="% Submergence"),
-         fill=guide_legend(title="Site"))
+  guides(color=guide_legend(title="Ecosystem"),
+         linetype=guide_legend(title="% Submergence"))
 
 
 # Extract the legend. Returns a gtable
@@ -865,28 +857,6 @@ cc.trc.df <- rbind(cc.0.trc,cc.25.trc,cc.50.trc,cc.75.trc,cc.100.trc)
 unique(cc.trc.df$site)
 cc.trc.df$group <- factor(cc.trc.df$group, levels = c("0%", "0-25%", "25-50%", "50-75%","75-100%") )
 cc.trc.df$site <- factor(cc.trc.df$site, levels=c("TS1", "SE1","TS7"))
-
-
-legend.p <- ggplot( data = cc.trc.df ) + 
-  geom_line( aes( x= PAR, y =Estimate, color=site, linetype=group)) +
-  geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.1 ) +
-  ylab(expression(paste('NEE'[day], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 10) +
-  scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284" ))+
-  scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
-  theme(text = element_text(size=20),legend.direction='vertical', 
-        legend.text=element_text(size=19)) + 
-  guides(color=guide_legend(title="Site"),
-         linetype=guide_legend(title="% Submergence"),
-         fill=guide_legend(title="Site"))
-
-
-# Extract the legend. Returns a gtable
-leg <- get_legend(legend.p)
-
-# Convert to a ggplot and print
-as_ggplot(leg)
-
 
 png('figures/trc_Site_CC.png',width = 900, height = 625,)
 ggarrange( as_ggplot(leg), cc0.trc.p, cc25.trc.p,

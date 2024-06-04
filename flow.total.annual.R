@@ -5,39 +5,75 @@ library(tidyverse)
 Parms <- read.csv('data/WZ_NEE_Budget_Key_CIs.csv' )
 
 df <- read.csv( 'data/AR_flux_sites_2021.csv')
-summary(df$TS1_daily_wl)
+df$TIMESTAMP <- as.POSIXct( df$TIMESTAMP)
 
-df$TS_WL <- zoo::na.approx(df$TS1_daily_wl, rule = 2)
-plot(zoo::na.approx(df$TS1_daily_wl, rule = 2))
+summary(df)
 
-unique(df$TS1WLindicator )
-df$TS_WL[ is.na(df$TS1WLindicator) == T]
-df$TS1WLindicator[ is.na(df$TS1WLindicator) == T] <- 0.50
+# Fill missing values with NA:
+df$SE1.TA.f[ is.na(df$SE1.TA.f )] <- df$TS7.TA.f[ is.na(df$SE1.TA.f )]
+df$SE1.PAR.f[ is.na(df$SE1.PAR.f )] <- df$TS7.PAR.f[ is.na(df$SE1.PAR.f )]
 
-df$SE1.TA.f [is.na(df$SE1.TA.f ) == T] <- df$TS1.TA.f [is.na(df$SE1.TA.f ) == T]
+df$TS1WLindicator.2 <- 0.5
+df$TS1WLindicator.2[ df$TS1WLindicator == 0] <- 0
+df$TS1WLindicator.2[ df$TS1WLindicator == 0.25] <- 0.25
+df$TS1WLindicator <- df$TS1WLindicator.2
+
+df$SE1.TA.f [is.na(df$SE1.TA.f ) == T] <- df$TS1.TA.f[is.na(df$SE1.TA.f ) == T]
 df$SE1.PAR.f[is.na(df$SE1.PAR.f ) == T] <- df$TS1.PAR.f[is.na(df$SE1.PAR.f ) == T]
-# How to deal with gaps in the Submergence:
 
+# Correct for the missing WL category at TS7:
+unique(df$TS7WLindicator)
+
+df$TS7WLindicator.2 <- 0.25
+df$TS7WLindicator.2[ df$TS7WLindicator == 0.5] <- 0.25
+df$TS7WLindicator.2[ df$TS7WLindicator == 0] <- 0
+
+plot(df$TIMESTAMP, df$TS7WLindicator.2 )
+df$TS7WLindicator <- df$TS7WLindicator.2
+
+
+# How to deal with gaps in the Submergence:
+names(df)
 # combining submergence parms with site NEE
 Parms.TS1 <- Parms %>% filter(Site == 'TS1WLindicator')
 Parms.SE1 <- Parms %>% filter(Site == 'SE1WLindicator')
 Parms.TS7 <- Parms %>% filter(Site == 'TS7WLindicator')
 
-ts1 <- df %>% dplyr::select("TS1.NEE.filtered",  "TS1.TA.f", "TS1.PAR.f", "TS1WLindicator") %>% rename(NEE = TS1.NEE.filtered,
+ts1 <- df %>% dplyr::select("TIMESTAMP", "TS1.NEE.filtered",  "TS1.TA.f", "TS1.PAR.f", "TS1WLindicator", "TS1_daily_wl") %>% rename(NEE = TS1.NEE.filtered,
                                                                                                 TA.f = TS1.TA.f,
                                                                                                 PAR.f = TS1.PAR.f,
                                                                                                 Submergence = TS1WLindicator ) %>% left_join( Parms.TS1, by='Submergence')
 
-se1 <- df %>% dplyr::select("SE1.NEE.filtered",  "SE1.TA.f", "SE1.PAR.f", "SE1WLindicator") %>% rename(NEE = SE1.NEE.filtered,
+se1 <- df %>% dplyr::select("TIMESTAMP", "SE1.NEE.filtered",  "SE1.TA.f", "SE1.PAR.f", "SE1WLindicator", "SE1_daily_wl") %>% rename(NEE = SE1.NEE.filtered,
                                                                                                 TA.f = SE1.TA.f,
                                                                                                 PAR.f = SE1.PAR.f,
                                                                                                 Submergence =SE1WLindicator ) %>% left_join( Parms.SE1, by='Submergence')
 
-ts7 <- df %>% dplyr::select("TS7.NEE.filtered",  "TS7.TA.f", "TS7.PAR.f", "TS7WLindicator") %>% rename(NEE = TS7.NEE.filtered,
+ts7 <- df %>% dplyr::select("TIMESTAMP", "TS7.NEE.filtered",  "TS7.TA.f", "TS7.PAR.f", "TS7WLindicator", "TS7_daily_wl") %>% rename(NEE = TS7.NEE.filtered,
                                                                                                 TA.f = TS7.TA.f,
                                                                                                 PAR.f = TS7.PAR.f,
                                                                                                 Submergence =TS7WLindicator ) %>% left_join( Parms.TS7, by='Submergence')
+# Prepare datafrome to calulate the optimum:
 
+
+opt.parms <- function( df){
+  df$Pmax.opt <- min(df$Pmax, na.rm=T)
+  df$alpha.opt <-df$alpha
+  df$Reco.opt <-df$Reco
+  
+  #df$alpha.opt <-max(df$alpha[df$Pmax == min(df$Pmax, na.rm=T)], na.rm=T)
+  #df$Reco.opt <-max(df$Reco[df$Pmax == min(df$Pmax, na.rm=T)], na.rm=T)
+  #df$R0.opt <-mean(df$R0[df$Pmax == min(df$Pmax, na.rm=T)], na.rm=T)
+  #df$b.opt <-mean(df$b[df$Pmax == min(df$Pmax, na.rm=T)], na.rm=T)
+  
+  df$R0.opt <-df$R0
+  df$b.opt <-df$b
+  return(df)
+}
+
+ts1 <- opt.parms(ts1)
+se1 <- opt.parms(se1)
+ts7 <- opt.parms(ts7)
 
 gapfill <- function(data.frame){
   
@@ -65,6 +101,47 @@ sum( ts1.gf$NEE.gc, na.rm=T)
 sum( se1.gf$NEE.gc, na.rm=T)
 sum( ts7.gf$NEE.gc, na.rm=T)
 
+# Optimum:
+data.frame <- ts7.gf
+gapfill.opt <- function(data.frame){
+  
+  data.frame$NEE.day.opt <- data.frame$Reco.opt + ((data.frame$PAR.f * data.frame$alpha.opt * data.frame$Pmax.opt)/ (data.frame$PAR.f * data.frame$alpha.opt + data.frame$Pmax.opt))  
+  
+  data.frame$NEE.night.opt <- data.frame$R0.opt * exp(data.frame$b.opt * data.frame$TA.f)
+  
+  data.frame$NEE.Modeled.opt <- data.frame$NEE.day.opt
+  data.frame$NEE.Modeled.opt[ data.frame$PAR.f == 0] <- data.frame$NEE.night.opt[data.frame$PAR.f == 0]
+   
+  data.frame$NEE.Modeled.opt.gc <- (12.0107*data.frame$NEE.Modeled.opt)/1000000*1800
+  return( data.frame)
+}
+
+ts1.gf.opt <-gapfill.opt(data.frame = ts1.gf)
+ts7.gf.opt <-gapfill.opt(data.frame = ts7.gf)
+se1.gf.opt <-gapfill.opt(data.frame = se1.gf )
+
+sum( ts1.gf.opt$NEE.Modeled.opt.gc, na.rm=T)
+sum( se1.gf.opt$NEE.Modeled.opt.gc, na.rm=T)
+sum( ts7.gf.opt$NEE.Modeled.opt.gc, na.rm=T)
+
+# Daily summariesf for the plots:
+ts1.gf.opt %>% group_by(TIMESTAMP) %>% summarise(NEE.gc = sum(NEE.gc) , NEE.Modeled.opt.gc = sum(NEE.Modeled.opt.gc)) %>% 
+  ggplot() + geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.gc)), col="darkblue")+
+  geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.Modeled.opt.gc)), col="blue") + theme_bw()
+
+se1.gf.opt %>% group_by(TIMESTAMP) %>% summarise(NEE.gc = sum(NEE.gc) , NEE.Modeled.opt.gc = sum(NEE.Modeled.opt.gc)) %>%  
+  ggplot() + geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.gc)), col="#fab255")+
+  geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.Modeled.opt.gc)), col="#fab255") + theme_bw()
+
+ts7.gf.opt %>% group_by(TIMESTAMP) %>% summarise(NEE.gc = sum(NEE.gc) , NEE.Modeled.opt.gc = sum(NEE.Modeled.opt.gc)) %>%
+  ggplot() + geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.gc)), col="#43b284")+
+  geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.Modeled.opt.gc)), col="#43b284") + theme_bw()
+
+
+
+save(ts1.gf.opt,
+     se1.gf.opt,
+     ts7.gf.opt, file='data/Budget_Opt.RDATA' )
 # Uncertainty estimation ####
 
 # PARM table

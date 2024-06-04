@@ -16,6 +16,7 @@ library(sf)         # simple features
 library(ggpubr)     # rotate axes text for more readable figures
 library(ggspatial)  # scale bars and north arrows
 
+enp.se <- read_sf("data/shapefiles/Southeastern Everglades_AOI.kml" ) %>% st_transform( 3857)
 
 site <- c("Marl Prairie", "Ecotone", "Mangrove Scrub", "Inland", "Coastal") # label points by landcover type
 site_code <- c( "TS/Ph-1", "SE-1", "TS/Ph-7", "EVER8", "HC") # label points by site name
@@ -61,6 +62,7 @@ TSL.shp <- readOGR(
   verbose = TRUE)
 
 TSL.shp <- spTransform(TSL.shp, crs('+proj=longlat +datum=WGS84 +no_defs'))
+
 
 # convert SpatialPolygons to sf
 TSL.sf <- sf::st_as_sf(TSL.shp)
@@ -128,7 +130,7 @@ crs(FL.complex.shp)
 FL.complex.sf <- sf::st_as_sf(FL.complex.shp)
 # convert the FL polygon to web mercator (EPSG 3857) *all basemaps from the basemaps package come in this format
 FL.complex.sf <- st_transform(FL.complex.sf, crs = st_crs(3857))
-
+FL.complex.sf <- st_transform(FL.complex.sf, crs = st_crs(3857))
 # bring it all together in a site map! #####
 
 # set limits for map
@@ -139,15 +141,17 @@ lat_lims <- c(2855000, 2975000) # originally c(2892000, 2936500)
 shapes <- c(19, 17)
 
 # make the map
+ggplot() + geom_sf(enp.se, mapping = aes(), color = "black", fill = "transparent", lwd = 0.5)
 
 sitemap_no_base <- ggplot() +  theme_bw() + theme(panel.grid.major = element_blank()) +
   geom_sf(FL.complex.sf, mapping = aes(), color = "black", fill = "gray90", lwd = 0.25) + # FL polygon
+  geom_sf(enp.se, mapping = aes(), color = "black", fill = "gray50", lwd = 0.5) + 
   coord_sf(xlim = lon_lims, ylim = lat_lims, expand = FALSE)  +
   #geom_sf(roads.sf, mapping = aes(), color = "gray50", lwd = 0.25, show.legend = FALSE) +  # road polygon
   #coord_sf(xlim = lon_lims, ylim = lat_lims, expand = FALSE)  +
   #geom_sf(canals.sf, mapping = aes(), color = "lightblue", lwd = 0.5, show.legend = FALSE) +  # canal polygon
   #coord_sf(xlim = lon_lims, ylim = lat_lims, expand = FALSE)  +
-  geom_sf(ENP.sf, mapping = aes(), color = "peru", fill = "peru", alpha = 0, lwd = 0.5, show.legend = FALSE) +  # Everglades National Park polygon
+  geom_sf(ENP.sf, mapping = aes(), color = "peru", fill = "peru", alpha = 0, lwd = 0.75, show.legend = FALSE) +  # Everglades National Park polygon
   coord_sf(xlim = lon_lims, ylim = lat_lims, expand = FALSE)  +
   geom_sf(TSL.sf, mapping = aes(), color = "lightblue", fill = "lightblue", lwd = 0.25, show.legend = FALSE) +  # Taylor Slough polygon
   coord_sf(xlim = lon_lims, ylim = lat_lims, expand = FALSE)  +
@@ -167,11 +171,11 @@ sitemap_no_base <- ggplot() +  theme_bw() + theme(panel.grid.major = element_bla
   ggspatial::annotation_north_arrow(location = "br", which_north = "true", 
                                     pad_x = unit(0.2, "in"), pad_y = unit(0.2, "in"),
                                     style = north_arrow_fancy_orienteering(fill = c("white", "gray50"), text_size = 14, text_col = "gray30")) + # adds north arrow
-  annotate(geom="text", x = -8971750, y = 2929627, label = "Marl Prairie", color = "gray30", hjust= 1, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are / hjust=0.8, vjust = -1.2 / hjust=1.2, vjust = -0.1, hjust=-0.2, vjust = 0.15, 
-  annotate(geom="text", x = -8947972, y = 2919276, label = "Ecotone", color = "gray30", hjust= 0.65, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are  
-  annotate(geom="text", x = -8977035, y = 2899932, label = "Scrub Mangrove", color = "gray30", hjust= 0.9, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are  
-  annotate(geom="text", x = -8958874, y = 2918296, label = "Inland", color = "gray30", hjust= 1.2, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are
-  annotate(geom="text", x = -8955015, y = 2906995, label = "Coastal", color = "gray30", hjust= 1, vjust=-1.4, size = 5.5) + # adds annotation to the map points so we know what the sites are  
+  annotate(geom="text", x = -8971750, y = 2929627, label = "Marl Prairie", color = "gray10", hjust= 1, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are / hjust=0.8, vjust = -1.2 / hjust=1.2, vjust = -0.1, hjust=-0.2, vjust = 0.15, 
+  annotate(geom="text", x = -8947972, y = 2919276, label = "Ecotone", color = "gray10", hjust= 0.65, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are  
+  annotate(geom="text", x = -8977035, y = 2899932, label = "Scrub Mangrove", color = "gray10", hjust= 0.9, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are  
+  annotate(geom="text", x = -8958874, y = 2918296, label = "Inland", color = "gray10", hjust= 1.2, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are
+  annotate(geom="text", x = -8955015, y = 2906995, label = "Coastal", color = "gray10", hjust= 1, vjust=-1.4, size = 5.5) + # adds annotation to the map points so we know what the sites are  
   
   geom_text(TSL.sf, mapping = aes(x = -8983000, y = 2917000, label = "Taylor Slough"), color = "lightskyblue", size = 4.5, angle = 55, fontface = "italic") +
   geom_text(ENP.sf, mapping = aes(x = -9000500, y = 2948500, label = "Everglades National Park"), color = "peru", size = 4.5, fontface = "italic")  #(x = -8995000, y = 2971000) ENP label outside the park outline

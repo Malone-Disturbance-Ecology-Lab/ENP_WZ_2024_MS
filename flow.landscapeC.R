@@ -6,15 +6,14 @@
 library(sf)
 library(terra)
 library(tidyterra)
-library(ggpubr)
 
 # Import vegetation layers and simplify: ####
-enp.eco <- read_sf(dsn="data/shapefiles", layer="SaltMarsh" )
-enp.Prairie <- read_sf(dsn="data/shapefiles", layer="Prairie" )
-enp.fwm <- read_sf(dsn="data/shapefiles", layer="FreshwaterMarsh" )
+enp.eco <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="SaltMarsh" )
+enp.Prairie <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="Prairie" )
+enp.fwm <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="FreshwaterMarsh" )
 
-enp.msl <- read_sf(dsn="data/shapefiles", layer="MangroveShrubland" )
-enp.ms <- read_sf(dsn="data/shapefiles", layer="MangroveScrub" )
+enp.msl <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="MangroveShrubland" )
+enp.ms <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="MangroveScrub" )
 
 enp.fwm <- rbind(enp.fwm, enp.Prairie )
 enp.msc <- rbind(enp.msl, enp.ms)
@@ -37,12 +36,14 @@ enp.msc.d <- enp.msc[enp.msc$msc == 1, ] %>% # select the central parts
   st_union() %>% # unite to a geometry object
   st_sf()%>% st_simplify() %>% st_transform(26917)
 
+ggplot() + geom_sf(data=enp.msc.d )
+
 # Import ENP and make a grid ####
-enp <- st_read( "data/shapefiles/Everglades_NP.shp")
-enp.trans <-st_transform(enp, 26917)
+enp <- st_read( "/Volumes/MaloneLab/Research/ENP/Everglades_NP.shp")
+enp.trans <- enp %>% st_transform(26917)
 enp.grid <- st_make_grid(enp.trans , cellsize = 500, what = "centers")
 
-#only extract the points in the limits of you AOI
+#only extract the points in the limits of your AOI
 grid <- st_intersection(enp.grid, enp.fwm.d )   
 
 # Calculate the distance from mangroves for FWM: #####
@@ -50,21 +51,23 @@ enp.msc.d <- st_cast(enp.msc.d, "MULTILINESTRING") # chane polygon to shape
 
 #calculation of the distance
 dist.fwm <- st_distance(enp.msc.d, grid)
-plot(dist.fwm )
+ggplot() + geom_sf(data=enp) +  geom_sf(data=enp.msc.d )+  geom_sf(data=grid )
 
 # To convert distance in meters to kilometers divide by 1000.
 df.fwm <- data.frame(dist = as.vector(dist.fwm)/1000,
-                 st_coordinates(grid))
+                     st_coordinates(grid))
 
-ext <- ext(as(grid, "Spatial"))
-r <- rast( ext(ext), resolution = 1000,crs = "+proj=utm +zone=27 +ellps=intl +towgs84=-73,47,-83,0,0,0,0 +units=m +no_defs")
+#ext <- ext(as(enp.trans), "Spatial"))
+r <- rast( ext(enp.trans), resolution = 1000 ,crs = enp.trans)
+ggplot() + geom_sf(data=enp) +  geom_sf(data=enp.msc.d )+  geom_sf(data=enp.trans)
 
 #convert the points to a spatial object class sf
 dist.fwm_sf <- st_as_sf(df.fwm, coords = c("X", "Y")) %>%
-  st_set_crs(st_crs( df.fwm))
+  st_set_crs(26917)
 
 #create the distance raster
 dist.fwm_raster <- rasterize(dist.fwm_sf, r, "dist", fun = mean) 
+plot(dist.fwm_raster)
 
 # Polygon for high risk areas ####
 high.risk <- dist.fwm_raster
@@ -90,54 +93,59 @@ veg.msc <- rasterize( enp.msc.d, r, "veg", fun = mean)
 
 veg <- sum(veg.fwm, veg.msc, na.rm=T)
 veg <- as.factor(veg)
-ggplot() +geom_spatraster(data=veg)
+
 
 # Figure:
 library(ggplot2)
 library(tidyterra)
 
-ggplot() + geom_sf(data=enp)
+enp.se <- read_sf("/Volumes/MaloneLab/Research/ENP/The Whitezone/WL+SAL/Data/Southeastern Everglades_AOI.kml" ) 
 
-enp <- enp %>% st_transform(crs(enp.se  ))
-
-enp.se <- read_sf("data/shapefiles/Southeastern Everglades_AOI.kml" ) 
-
-enp.se <- enp.se %>% st_make_valid() %>% st_transform('+proj=utm +zone=27 +ellps=intl +towgs84=-73,47,-83,0,0,0,0 +units=m +no_defs')
-
-test <-st_transform(enp.se , st_crs(veg))
-
-ggplot() + geom_sf(data=test)
-ggplot() + geom_spatraster(data=veg)
-
-enp.shade <- enp %>% st_transform('+proj=utm +zone=27 +ellps=intl +towgs84=-73,47,-83,0,0,0,0 +units=m +no_defs') %>% st_difference(enp.se)  
+enp.se <- enp.se %>% st_make_valid() %>% st_transform(26917) %>% st_buffer(4000)
+enp.shade <- enp %>% st_transform(26917) %>% st_difference(enp.se)  
 
 veg$veg.p <- veg$veg
-veg.factor.df <- data.frame(value=1:3, veg= c("Mangrove Scrub","Marsh",  "Ecotone"))
+veg.factor.df <- data.frame(value=c(2,3,1), veg= c("Freshwater Marl Praire",  "Brakish Ecotone","Saline Scrub Mangrove"))
 levels(veg$veg.p) <- veg.factor.df
-coltab(veg$veg.p) <- data.frame(value=1:3, col= c("#43b284", "#000099", "#fab255"))
+coltab(veg$veg.p) <- data.frame(value=c(2,3,1), col= c( "#000099", "#fab255","#43b284"))
 
 
+veg.se <- veg %>% terra::crop( enp.shade) %>% mask(enp.shade)
+plot(veg.se )
+
+ggplot() + geom_spatraster(data = veg$veg.p, na.rm = TRUE,show.legend = T) +  
+  scale_fill_manual(na.value = "transparent", values= c("#43b284", "#000099", "#fab255"),
+                    labels =c("Freshwater Marl Praire",  "Brakish Ecotone","Saline Scrub Mangrove", ""))+
+  labs( fill="" ) +
+  geom_spatraster_contour(data = dist.fwm_raster, breaks =seq(1, 50, 1.5), na.rm = TRUE, col="lightblue4")+
+  geom_sf(data= enp.shade, alpha=0.5, col="transparent") + theme_bw()
 
 
-simulation.1 <- ggplot() + geom_spatraster(data = veg$veg.p, na.rm = TRUE,show.legend = T) +  labs( fill="" ) +
-  geom_spatraster_contour(data = dist.fwm_raster, breaks =seq(1, 50, 1.5), na.rm = TRUE, col="lightblue4") + 
-  geom_sf( data=high.risk.sf, col="black", fill = 'transparent', linewidth=0.5) +
- theme(legend.position = "bottom") + theme(axis.text=element_text(size=6.5)) 
+simulation.1 <- ggplot() + geom_spatraster(data = veg$veg.p, na.rm = TRUE,show.legend = T) +  
+  scale_fill_manual(na.value = "transparent", values= c("#43b284", "#000099", "#fab255"),
+                    labels =c("Freshwater Marl Praire",  "Brakish Ecotone","Saline Scrub Mangrove", ""))+
+  labs( fill="" ) +
+  geom_spatraster_contour(data = dist.fwm_raster, breaks =seq(1, 50, 1.5), na.rm = TRUE, col="lightblue4")+
+  geom_sf(data= enp.shade, alpha=0.5, col="transparent") + theme_bw()
 
-png(file="figures/Simulation_2024.png", width     = 3.25,
-    height    = 3.25,
+writeRaster( veg, 'data/landscapeC.tif')
+writeRaster( dist.fwm_raster, 'data/landscapeC_dist.tif')
+save(enp.shade,  file='data/Landscape_C.RDATA')
+
+png(file="/Volumes/MaloneLab/Research/ENP/The Whitezone/WL+SAL/Figures/Simulation_2024.png", width     =4.8,
+    height    = 3.5,
     units     = "in",
     res       = 1200,
     pointsize = 4)
 simulation.1
 dev.off()
 
-
+# Subset by the se!
 veg$Diatance <- dist.fwm_raster
 veg$veg.gC <- dist.fwm_raster
-veg$veg.gC[veg$veg == 1] <- -483.7289*1000
-veg$veg.gC[veg$veg == 2] <- -135.0244*1000
-veg$veg.gC[veg$veg == 3] <- -130.7658*1000
+veg$veg.gC[veg$veg == 1] <- -291.6616*1000000 # there are 1000000 sq meters in an 1k resolution area
+veg$veg.gC[veg$veg == 2] <- -19.08183*1000000
+veg$veg.gC[veg$veg == 3] <- -74.01228*1000000
 
 # Update the veg class with distance
 veg$veg2 <- veg
@@ -147,38 +155,35 @@ veg$veg2[veg$veg == 3] <- 1
 veg$veg2[veg$Diatance > 3 ] <- 2
 
 veg$veg.gC.century <- veg$veg.gC
-veg$veg.gC.century[veg$veg2 == 1] <- -291.6616*1000
-veg$veg.gC.century[veg$veg2 == 2] <- -19.08183*1000
-veg$veg.gC.century[veg$veg2 == 3] <- -74.01228*1000
+veg$veg.gC.century[veg$veg2 == 1] <- -291.6616*1000000
+veg$veg.gC.century[veg$veg2 == 2] <- -19.08183*1000000
+veg$veg.gC.century[veg$veg2 == 3] <- -74.01228*1000000
 
 # Subset information for the southeastern saline everglades:
 
 
-enp.se <- read_sf("data/shapefiles/Southeastern Everglades_AOI.kml" ) %>% st_transform( 26917)
+enp.se <- read_sf("/Volumes/MaloneLab/Research/ENP/The Whitezone/WL+SAL/Data/Southeastern Everglades_AOI.kml" ) %>% st_transform( 26917)
 
 veg.se <- terra::crop(veg, enp.se) %>% terra::mask( enp.se)
 
 
 # Annual exchange of C
-terra::global(veg$veg.gC, sum, na.rm=T)/ 1000000000 # in giga grams or Gg
+terra::global(veg.se$veg.gC, sum, na.rm=T)/ 1000000000  # Giga ton of carbon
 
-sum( veg$veg.gC[ veg$veg == 2], na.rm=T)/ 1000000 # in meteric ton of carbon
-sum( veg$veg.gC[ veg$veg == 1], na.rm=T)/ 1000000 # in meteric ton of carbon
-sum( veg$veg.gC[ veg$veg == 3], na.rm=T)/ 1000000 # in meteric ton of carbon
+sum( veg.se$veg.gC[ veg.se$veg == 2], na.rm=T)/ 1000000000 # in meteric ton of carbon
+sum( veg.se$veg.gC[ veg.se$veg == 1], na.rm=T)/ 1000000000 # in meteric ton of carbon
+sum( veg.se$veg.gC[ veg.se$veg == 3], na.rm=T)/ 1000000000 # in meteric ton of carbon
 
 # area (ENP is 610460.2 ha) 
-veg$area <- terra:: cellSize( veg,unit="ha")
-sum(veg$area[veg$veg == 1]); sum(veg$area[veg$veg == 1])/61046
-sum(veg$area[veg$veg == 2]) ; sum(veg$area[veg$veg == 2])/610460.2
-sum(veg$area[veg$veg == 3]); sum(veg$area[veg$veg == 3])/61046
+veg.se$area <- terra:: cellSize( veg.se,unit="ha")
+sum(veg.se$area[veg.se$veg == 1]); sum(veg.se$area[veg.se$veg == 1])/610670*100
+sum(veg.se$area[veg.se$veg == 2]) ; sum(veg.se$area[veg.se$veg == 2])/610670*100
+sum(veg.se$area[veg.se$veg == 3]); sum(veg.se$area[veg.se$veg == 3])/610670*100
 
-plot(veg$veg.gC.century)
+plot(veg.se$veg.gC.century)
 
-# Make a new veg class to summarize data by!!!!!!
-terra::global(veg$veg.gC.century, sum, na.rm=T)/ 1000000000 # in giga grams or Gg
 
-sum( veg$veg.gC.century[ veg$veg2 == 2], na.rm=T)/ 1000000 # in meteric ton of carbon
-sum( veg$veg.gC.century[ veg$veg2 == 1], na.rm=T)/ 1000000 # in meteric ton of carbon
-sum( veg$veg.gC.century[ veg$veg2 == 3], na.rm=T)/ 1000000 # in meteric ton of carbon
- # what was 3 became mangroves in the next century!
-
+terra::global(veg.se$veg.gC.century, sum, na.rm=T)/ 1000000000  # in giga grams or Gg
+sum( veg.se$veg.gC.century[ veg.se$veg2 == 2], na.rm=T)/ 1000000000 # in meteric ton of carbon
+sum( veg.se$veg.gC.century[ veg.se$veg2 == 1], na.rm=T)/ 1000000 # in meteric ton of carbon
+sum( veg.se$veg.gC.century[ veg.se$veg2 == 3], na.rm=T)/ 1000000 # in meteric ton of carbon
