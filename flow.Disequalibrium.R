@@ -1,4 +1,5 @@
-# Disequalibrium:
+# Resilience:
+
 # This script is used to calculate the numbers used for the simulation
 rm(list=ls())
 
@@ -33,7 +34,7 @@ Plot.DE.Pmax <- ggplot( ) + geom_line( data= ts1.gf.opt, aes( x=TS1_daily_wl, y=
   geom_line( data= extension, aes( x=WL.se1.2, y= DE.Pmax.se1.2), col="#fab255", linewidth=2, linetype = "dotted") +
   geom_line( data= extension, aes( x=WL.ts7, y= DE.Pmax.ts7),col= "#43b284", linewidth=2, linetype = "dotted") + 
   geom_line( data= extension, aes( x=WL.ts7.2, y= DE.Pmax.ts7.2),col= "#43b284", linewidth=2, linetype = "dotted") +
-  theme_bw() + ylab( "Disequalibrium (Pmax)") + xlab( "Water Level (m)") + theme(text = element_text(size = 25))
+  theme_bw() + ylab( expression(paste(Delta,"Pmax"))) + xlab( "Water Level (m)") + theme(text = element_text(size = 25))
 
 
 names(ts1.gf.opt)
