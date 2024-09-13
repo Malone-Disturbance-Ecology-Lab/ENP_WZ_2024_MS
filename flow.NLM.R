@@ -8,7 +8,9 @@ library(tidybayes)
 library(tidyverse)
 library(ggpubr)
 
-df <- read.csv( 'data/AR_flux_sites_2021.csv')
+setwd('/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS')
+
+df <- read.csv( 'data/data_raw/AR_flux_sites_2021.csv')
 df <-na.omit(df);summary(df)
 
 df$date <- as.Date(df$Date)
@@ -95,13 +97,11 @@ summary(se1.75)
 plot(conditional_effects(se1.75), points=T)
 
 
-se1.1.00 <- brm( bf(nee ~ (a1 * PAR * ax)/(a1 * PAR + ax) + r, a1+ax+r ~ 1, nl=TRUE),
-               prior = priors.se1 , data = SE1.df[which(SE1.df$I.wl == 1.00 & ts1.df$PAR >0),], 
-               backend = "cmdstanr", iter = 50000, cores =4, seed=101)
+#se1.1.00 <- brm( bf(nee ~ (a1 * PAR * ax)/(a1 * PAR + ax) + r, a1+ax+r ~ 1, nl=TRUE),  prior = priors.se1 , data = SE1.df[which(SE1.df$I.wl == 1.00 & ts1.df$PAR >0),],  backend = "cmdstanr", iter = 50000, cores =4, seed=101)
 
 
-summary(se1.1.00)
-plot(conditional_effects(se1.1.00), points=T)
+#summary(se1.1.00)
+#plot(conditional_effects(se1.1.00), points=T)
 
 #__________________________________
 
@@ -137,9 +137,9 @@ length(ts1.00$data$nee)
 length(ts1.25$data$nee)
 length(ts1.5$data$nee)
 
-length(se1.5$data$nee)
-length(se1.75$data$nee)
-length(se1.1.00$data$nee)
+length(se1.5$data$nee)/ (length(se1.5$data$nee) +length(se1.75$data$nee))
+length(se1.75$data$nee)/ (length(se1.5$data$nee) +length(se1.75$data$nee))
+#length(se1.1.00$data$nee)
 
 length(TS7.00$data$nee)
 length(TS7.25$data$nee)
@@ -170,13 +170,23 @@ posterior.data <- function(model, model.name){
   return( p.dist )
 }
 
+# posterior.LRC <- cbind( posterior.data(ts1.00, "ts1.00"), 
+                       #posterior.data(ts1.25, "ts1.25"),
+                        #posterior.data(ts1.5, "ts1.5"),
+                        
+                        #posterior.data(se1.5, "se1.5"),
+                        #posterior.data(se1.75, "se1.75"),
+                        #posterior.data(se1.1.00, "se1.1.00"),
+                        
+                        #posterior.data(TS7.25, "TS7.25"),
+                        #posterior.data(TS7.00, "TS7.00"))
+
 posterior.LRC <- cbind( posterior.data(ts1.00, "ts1.00"), 
                         posterior.data(ts1.25, "ts1.25"),
                         posterior.data(ts1.5, "ts1.5"),
                         
                         posterior.data(se1.5, "se1.5"),
                         posterior.data(se1.75, "se1.75"),
-                        posterior.data(se1.1.00, "se1.1.00"),
                         
                         posterior.data(TS7.25, "TS7.25"),
                         posterior.data(TS7.00, "TS7.00"))
@@ -195,8 +205,8 @@ lrc.predictions$se1.5 <- predict( se1.5 , newdata=lrc.predictions)[,1]
 lrc.predictions$se1.5.err <- predict( se1.5 , newdata=lrc.predictions)[,2]
 lrc.predictions$se1.75 <- predict( se1.75 , newdata=lrc.predictions)[,1]
 lrc.predictions$se1.75.err <- predict( se1.75 , newdata=lrc.predictions)[,2]
-lrc.predictions$se1.1.00 <- predict( se1.1.00 , newdata=lrc.predictions)[,1]
-lrc.predictions$se1.1.00.err <- predict( se1.1.00 , newdata=lrc.predictions)[,2]
+#lrc.predictions$se1.1.00 <- predict( se1.1.00 , newdata=lrc.predictions)[,1]
+#lrc.predictions$se1.1.00.err <- predict( se1.1.00 , newdata=lrc.predictions)[,2]
 
 lrc.predictions$TS7.25 <- predict( TS7.25 , newdata=lrc.predictions)[,1]
 lrc.predictions$TS7.25.err <- predict( TS7.25 , newdata=lrc.predictions)[,2]
@@ -258,12 +268,12 @@ summary(se1.5.trc)
 plot(conditional_effects(se1.75.trc), points=T)
 
 
-se1.1.00.trc <-brm( bf(nee ~ a * exp(b*TA), a+b ~ 1, nl=TRUE),
-                  prior = priors.se1.trc , data = SE1.df[which(SE1.df$I.wl == 1.00 & SE1.df$PAR == 0),], 
-                  backend = "cmdstanr", iter = 50000, cores =4, seed=101)
+#se1.1.00.trc <-brm( bf(nee ~ a * exp(b*TA), a+b ~ 1, nl=TRUE),
+                  #prior = priors.se1.trc , data = SE1.df[which(SE1.df$I.wl == 1.00 & SE1.df$PAR == 0),], 
+                  #backend = "cmdstanr", iter = 50000, cores =4, seed=101)
 
-summary(se1.1.00.trc)
-plot(conditional_effects(se1.1.00.trc), points=T)
+#summary(se1.1.00.trc)
+#plot(conditional_effects(se1.1.00.trc), points=T)
 
 # TS7
 
@@ -299,13 +309,22 @@ posterior.data.trc <- function(model, model.name){
   return( p.dist )
 }
 
+#posterior.trc <- cbind( posterior.data.trc(ts1.00.trc, "ts1.00"), 
+                        #posterior.data.trc(ts1.25.trc, "ts1.25"),
+                        #posterior.data.trc(ts1.5.trc, "ts1.5"),
+                        
+                        #posterior.data.trc(se1.5.trc, "se1.5"),
+                        #posterior.data.trc(se1.75.trc, "se1.75"),
+                        #posterior.data.trc(se1.1.00.trc, "se1.1.00"),
+                        #posterior.data.trc(TS7.00.trc, "TS7.00"),
+                        #posterior.data.trc(TS7.25.trc, "TS7.25"))
+
 posterior.trc <- cbind( posterior.data.trc(ts1.00.trc, "ts1.00"), 
                         posterior.data.trc(ts1.25.trc, "ts1.25"),
                         posterior.data.trc(ts1.5.trc, "ts1.5"),
                         
                         posterior.data.trc(se1.5.trc, "se1.5"),
                         posterior.data.trc(se1.75.trc, "se1.75"),
-                        posterior.data.trc(se1.1.00.trc, "se1.1.00"),
                         posterior.data.trc(TS7.00.trc, "TS7.00"),
                         posterior.data.trc(TS7.25.trc, "TS7.25"))
 
@@ -323,8 +342,8 @@ trc.predictions$se1.5 <- predict( se1.5.trc , newdata=trc.predictions)[,1]
 trc.predictions$se1.5.err <- predict( se1.5.trc , newdata=trc.predictions)[,2]
 trc.predictions$se1.75 <- predict( se1.75.trc , newdata=trc.predictions)[,1]
 trc.predictions$se1.75.err <- predict( se1.75.trc , newdata=trc.predictions)[,2]
-trc.predictions$se1.1.00 <- predict( se1.1.00.trc , newdata=trc.predictions)[,1]
-trc.predictions$se1.1.00.err <- predict( se1.1.00.trc , newdata=trc.predictions)[,2]
+#trc.predictions$se1.1.00 <- predict( se1.1.00.trc , newdata=trc.predictions)[,1]
+#trc.predictions$se1.1.00.err <- predict( se1.1.00.trc , newdata=trc.predictions)[,2]
 
 trc.predictions$TS7.25 <- predict( TS7.25.trc , newdata=trc.predictions)[,1]
 trc.predictions$TS7.25.err <- predict( TS7.25.trc , newdata=trc.predictions)[,2]
@@ -335,13 +354,19 @@ trc.predictions$TS7.00.err <- predict( TS7.00.trc , newdata=trc.predictions)[,2]
 # files: lrc.predictions, posterior.LRC 
 # models:  'ts1.00, ts1.25, ts1.5, se1.5, se1.75, se1.1.00, TS7.25, TS7.00'
 
+#save(trc.predictions, posterior.trc, lrc.predictions, posterior.LRC ,
+     #ts1.00, ts1.25, ts1.5, se1.5, se1.75, se1.1.00, TS7.25, TS7.00,
+     #ts1.00.trc, ts1.25.trc, ts1.5.trc, se1.5.trc, se1.75.trc, se1.1.00.trc, 
+     #TS7.25.trc, TS7.00.trc, file= "data/WZ_NLM_RESULTS.RDATA")
+
 save(trc.predictions, posterior.trc, lrc.predictions, posterior.LRC ,
-     ts1.00, ts1.25, ts1.5, se1.5, se1.75, se1.1.00, TS7.25, TS7.00,
-     ts1.00.trc, ts1.25.trc, ts1.5.trc, se1.5.trc, se1.75.trc, se1.1.00.trc, 
+     ts1.00, ts1.25, ts1.5, se1.5, se1.75, TS7.25, TS7.00,
+     ts1.00.trc, ts1.25.trc, ts1.5.trc, se1.5.trc, se1.75.trc,
      TS7.25.trc, TS7.00.trc, file= "data/WZ_NLM_RESULTS.RDATA")
 
 
 # Figures ####
+rm(list=ls())
 
 load("data/WZ_NLM_RESULTS.RDATA")
 
@@ -357,8 +382,7 @@ lrc.predictions.ts1 <- rbind( lrc.reformat(lrc.predictions, 'ts1.00', 'ts1.00.er
                               lrc.reformat(lrc.predictions, 'ts1.5', 'ts1.5.err', "25-50%" ))
 
 lrc.predictions.se1 <- rbind( lrc.reformat(lrc.predictions, 'se1.5', 'se1.5.err', "25-50%" ), 
-                              lrc.reformat(lrc.predictions, 'se1.75', 'se1.75.err', "50-75%"),
-                              lrc.reformat(lrc.predictions, 'se1.1.00', 'se1.1.00.err', "75-100%" ))
+                              lrc.reformat(lrc.predictions, 'se1.75', 'se1.75.err', "50-75%"))
 
 lrc.predictions.TS7 <- rbind( lrc.reformat(lrc.predictions, 'TS7.00', 'TS7.00.err', "0%" ), 
                               lrc.reformat(lrc.predictions, 'TS7.25', 'TS7.25.err', "0-25%"))
@@ -380,7 +404,7 @@ ts1.lrc.p <- ggplot( data =lrc.predictions.ts1 ) +
 
 
 se1.lrc.p <- ggplot( data =lrc.predictions.se1 ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=group, linetype=group), colour="#fab255", size=1) +
+  geom_line( aes( x= PAR, y =Estimate, group=group, linetype=group), colour="#fab255", linewidth=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, group = group), alpha=0.1 , fill="#fab255") +
   ylab(expression(paste('NEE'[day], ' (', mu, 'mol m'^2, 's'^-1, ')' ))) +
   xlab(expression(paste( 'PAR (', mu, 'mol m'^2, 's'^-1, ')' ))) + ylim(-9, 13)+
@@ -423,22 +447,19 @@ ts1.r.p <- ggplot(data=posterior.LRC) + geom_density(aes(x=ts1.00.r, y = after_s
 
 
 se1.a1.p <- ggplot(data=posterior.LRC) + geom_density(aes(x=se1.5.a1, y = after_stat(scaled)),linetype=1, colour="#fab255", fill="#fab255", alpha=0.2) + 
-  geom_density(aes(x=se1.75.a1, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + 
-  geom_density(aes(x=se1.1.00.a1, y = after_stat(scaled)),linetype=3, colour="#fab255", alpha=0.2, fill="#fab255") + xlim(-0.25, 0) + xlab(expression(alpha)) + ylab("Density") +
+  geom_density(aes(x=se1.75.a1, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + xlim(-0.25, 0) + xlab(expression(alpha)) + ylab("Density") +
   theme(text = element_text(size=20),
         legend.position = 'none')
 
 
 se1.ax.p <- ggplot(data=posterior.LRC) + geom_density(aes(x=se1.5.ax, y = after_stat(scaled)),linetype=1, colour="#fab255", fill="#fab255", alpha=0.2) + 
-  geom_density(aes(x=se1.75.ax, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + 
-  geom_density(aes(x=se1.1.00.ax, y = after_stat(scaled)),linetype=3, colour="#fab255", alpha=0.2, fill="#fab255")+ xlim(-5, -2.5) + xlab(expression(P[max])) + ylab("Density")+
+  geom_density(aes(x=se1.75.ax, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + xlim(-5, -2.5) + xlab(expression(P[max])) + ylab("Density")+
   theme(text = element_text(size=20),
         legend.position = 'none')
 
 
 se1.r.p <- ggplot(data=posterior.LRC) + geom_density(aes(x=se1.5.r, y = after_stat(scaled)),linetype=1, colour="#fab255", fill="#fab255", alpha=0.2) + 
-  geom_density(aes(x=se1.75.r, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + 
-  geom_density(aes(x=se1.1.00.r, y = after_stat(scaled)),linetype=3, colour="#fab255", alpha=0.2, fill="#fab255")+ xlim(1.8, 2.25)+ xlab(expression(R[eco])) + ylab("Density")+
+  geom_density(aes(x=se1.75.r, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + xlim(1.8, 2.25)+ xlab(expression(R[eco])) + ylab("Density")+
   theme(text = element_text(size=20),
         legend.position = 'none')
 
@@ -477,13 +498,13 @@ dev.off()
 
 # Figures by % Submergence:
 
-ggplot(data=posterior.LRC) + geom_density(aes(x=ts1.00.a1, y = after_stat(scaled)),linetype=1, colour="#000099", fill="#000099", alpha=0.2)+ 
-  geom_density(aes(x=se1.1.00.a1, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255")+ 
-  geom_density(aes(x=TS7.00.a1, y = after_stat(scaled)),linetype=3, colour="#43b284", alpha=0.2, fill="#43b284") + xlim(-0.25, 0)
+ggplot(data=posterior.LRC) + geom_density(aes(x=ts1.00.a1, y = after_stat(scaled)),linetype=1, colour="#000099", fill="#000099", alpha=0.2) + 
+  geom_density(aes(x=TS7.00.a1, y = after_stat(scaled)),linetype=3, colour="#43b284", alpha=0.2, fill="#43b284") + xlim(-0.05, 0)
 
 # Create a dataset for violin plots
 names(posterior.LRC)
 df <- posterior.LRC
+
 model.parm <- 'ts1.00.a1'
 sub.site.LRC <- function(df,model.parm, site, cc,parm){
   df1 <- data.frame(df[,c(model.parm)])
@@ -508,13 +529,10 @@ lrc.vio.df <- rbind(sub.site.LRC(posterior.LRC,'ts1.00.a1', 'ts1', '0%','a1' ),
                     
                     sub.site.LRC(posterior.LRC,'se1.5.a1', 'se1', '25-50%','a1' ),
                     sub.site.LRC(posterior.LRC,'se1.75.a1', 'se1', '50-75%','a1'),
-                    sub.site.LRC(posterior.LRC,'se1.1.00.a1', 'se1', '75-100%','a1'),
                     sub.site.LRC(posterior.LRC,'se1.5.ax', 'se1', '25-50%','ax' ),
                     sub.site.LRC(posterior.LRC,'se1.75.ax', 'se1', '50-75%','ax'),
-                    sub.site.LRC(posterior.LRC,'se1.1.00.ax', 'se1', '75-100%','ax'),
                     sub.site.LRC(posterior.LRC,'se1.5.r', 'se1', '25-50%','r' ),
-                    sub.site.LRC(posterior.LRC,'se1.75.r', 'se1', '50-75%','r'),
-                    sub.site.LRC(posterior.LRC,'se1.1.00.r', 'se1', '75-100%','r'))
+                    sub.site.LRC(posterior.LRC,'se1.75.r', 'se1', '50-75%','r'))
 
 
 ggplot(lrc.vio.df[which(lrc.vio.df$parm == "a1"),], aes(x=cc, y=Estimate, color=site)) + 
@@ -542,7 +560,6 @@ cc.75 <- rbind(lrc.predictions.ts1[which( lrc.predictions.ts1$group == '50-75%')
                lrc.predictions.TS7[which( lrc.predictions.TS7$group == '50-75%'),])
 
 cc.100 <- rbind(lrc.predictions.ts1[which( lrc.predictions.ts1$group == '75-100%'),],
-               lrc.predictions.se1[which( lrc.predictions.se1$group == '75-100%'),],
                lrc.predictions.TS7[which( lrc.predictions.TS7$group == '75-100%'),])
 
 
@@ -606,23 +623,11 @@ cc75.lrc.p <- ggplot( data =cc.75 ) +
         panel.grid.major = element_line( linetype = 'solid', colour = "grey90"),
         text = element_text(size=18))
 
-cc100.lrc.p <- ggplot( data =cc.100 ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size=1) +
-  geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
-  ylab(expression(paste('NEE'[day], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'PAR (', mu, 'mol m'^-2, 's'^-1, ')' ))) + ylim(-9, 5) +
-  scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284" ))+
-  scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
-  scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5), limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence") +
-  scale_linetype_discrete(limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence")+
-  theme(legend.position="none",
-        panel.background = element_rect("white", "white", linetype=1, color="black"),
-        panel.grid.major = element_line( linetype = 'solid', colour = "grey90"),
-        text = element_text(size=18))
+
 
 
  
-cc.df <- rbind(cc.0,cc.25,cc.50,cc.75,cc.100)
+cc.df <- rbind(cc.0,cc.25,cc.50,cc.75)
 
 unique(cc.df$site)
 cc.df$group <- factor(cc.df$group, levels = c("0%", "0-25%", "25-50%", "50-75%","75-100%") )
@@ -647,11 +652,12 @@ as_ggplot(leg)
 
 png('figures/LRC_Site_CC.png',width = 900, height = 625,)
 ggarrange( as_ggplot(leg), cc0.lrc.p, cc25.lrc.p,
-           cc50.lrc.p, cc75.lrc.p,
-           cc100.lrc.p, font.label = list(size = 18),
+           cc50.lrc.p, cc75.lrc.p, font.label = list(size = 18),
            labels =c('','A', 'B', 'C',
                      'D', 'E'),nrow=2, ncol=3)
 dev.off()
+
+
 
 # Temperature Response Curve Figures: ####
 # # Temperature Response Curve Figures: ####
@@ -668,8 +674,7 @@ trc.predictions.ts1 <- rbind( trc.reformat(trc.predictions, 'ts1.00', 'ts1.00.er
                               trc.reformat(trc.predictions, 'ts1.5', 'ts1.5.err', "25-50%" ))
 
 trc.predictions.se1 <- rbind( trc.reformat(trc.predictions, 'se1.5', 'se1.5.err', "25-50%" ), 
-                              trc.reformat(trc.predictions, 'se1.75', 'se1.75.err', "50-75%"),
-                              trc.reformat(trc.predictions, 'se1.1.00', 'se1.1.00.err', "75-100%" ))
+                              trc.reformat(trc.predictions, 'se1.75', 'se1.75.err', "50-75%"))
 
 trc.predictions.TS7 <- rbind( trc.reformat(trc.predictions, 'TS7.00', 'TS7.00.err', "0%" ), 
                               trc.reformat(trc.predictions, 'TS7.25', 'TS7.25.err', "0-25%"))
@@ -679,7 +684,7 @@ ts1.trc.p <- ggplot( data =trc.predictions.ts1 ) +
   geom_line( aes( x= PAR, y =Estimate, group=group, linetype=group), colour="#000099") +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, group = group), alpha=0.1 , fill="#000099") +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 9) +
+  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-10, 25) +
   scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
   scale_linetype_discrete(limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence") +
   theme(text = element_text(size=20),
@@ -694,7 +699,7 @@ se1.trc.p <- ggplot( data =trc.predictions.se1 ) +
   geom_line( aes( x= PAR, y =Estimate, group=group, linetype=group), colour="#fab255") +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, group = group), alpha=0.1 , fill="#fab255") +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 9) +
+  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-10, 25) +
   scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
   scale_linetype_discrete(limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence") +
   theme(text = element_text(size=20),
@@ -704,7 +709,7 @@ ts7.trc.p <- ggplot( data =trc.predictions.TS7 ) +
   geom_line( aes( x= PAR, y =Estimate, group=group, linetype=group), colour="#43b284") +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, group = group), alpha=0.1 , fill="#43b284") +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 9) +
+  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-10, 25) +
   scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
   scale_linetype_discrete(limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence") +
   theme(text = element_text(size=20),
@@ -724,14 +729,12 @@ ts1.b.p <- ggplot(data=posterior.trc) + geom_density(aes(x=ts1.00.b, y = after_s
 
 
 se1.a.p <- ggplot(data=posterior.trc) + geom_density(aes(x=se1.5.a, y = after_stat(scaled)),linetype=1, colour="#fab255", fill="#fab255", alpha=0.2) + 
-  geom_density(aes(x=se1.75.a, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + 
-  geom_density(aes(x=se1.1.00.a, y = after_stat(scaled)),linetype=3, colour="#fab255", alpha=0.2, fill="#fab255") + xlab(expression(R[eco])) + ylab("Density")+
+  geom_density(aes(x=se1.75.a, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255")  + ylab("Density")+
   theme(text = element_text(size=20))
 
 
 se1.b.p <- ggplot(data=posterior.trc) + geom_density(aes(x=se1.5.b, y = after_stat(scaled)),linetype=1, colour="#fab255", fill="#fab255", alpha=0.2) + 
-  geom_density(aes(x=se1.75.b, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + 
-  geom_density(aes(x=se1.1.00.b, y = after_stat(scaled)),linetype=3, colour="#fab255", alpha=0.2, fill="#fab255")+ xlab(expression(b)) + ylab("Density")+
+  geom_density(aes(x=se1.75.b, y = after_stat(scaled)),linetype=2, colour="#fab255", alpha=0.2, fill="#fab255") + xlab(expression(b)) + ylab("Density")+
   theme(text = element_text(size=20))
 
 
@@ -782,9 +785,9 @@ cc.100.trc <- rbind(trc.predictions.ts1[which( trc.predictions.ts1$group == '75-
 
 cc0.trc.p <- ggplot( data =cc.0.trc ) + 
   geom_line( aes( x= PAR, y =Estimate, color=site, linetype=group), size=1) +
-  geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
+  geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 )  +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 10) +
+  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-15,25) +
   scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
   scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284")) +
   scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
@@ -799,7 +802,7 @@ cc25.trc.p <- ggplot( data =cc.25.trc ) +
   geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 10) +
+  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-15,25) +
   scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
   scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284" )) +
   scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
@@ -814,7 +817,7 @@ cc50.trc.p <- ggplot( data =cc.50.trc ) +
   geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size = 1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15) +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 10) +
+  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-15,25) +
   scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284" ))+
   scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284")) +
   scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
@@ -828,7 +831,7 @@ cc75.trc.p <- ggplot( data =cc.75.trc ) +
   geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size = 1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 10) +
+  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-15,25) +
   scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
   scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
   scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
@@ -838,21 +841,9 @@ cc75.trc.p <- ggplot( data =cc.75.trc ) +
         panel.grid.major = element_line( linetype = 'solid', colour = "grey90"),
         text = element_text(size=18))
 
-cc100.trc.p <- ggplot( data =cc.100.trc ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size = 1) +
-  geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
-  ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
-  xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-4, 10) +
-  scale_color_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284" ))+
-  scale_fill_manual(values = c("TS1" = "#000099","SE1" = "#fab255", "TS7"="#43b284"))+
-  scale_linetype_manual(values = c("0%" = 1,"0-25%" = 2, "25-50%"=3 , "50-75%"=4, "75-100%"=5)) +
-  scale_linetype_discrete(limits=c("0%","0-25%", "25-50%", "50-75%", "75-100%" ), name="% Submergence")+
-  theme(legend.position="none",
-        panel.background = element_rect("white", "white", linetype=1, color="black"),
-        panel.grid.major = element_line( linetype = 'solid', colour = "grey90"),
-        text = element_text(size=18))
 
-cc.trc.df <- rbind(cc.0.trc,cc.25.trc,cc.50.trc,cc.75.trc,cc.100.trc)
+
+cc.trc.df <- rbind(cc.0.trc,cc.25.trc,cc.50.trc,cc.75.trc)
 
 unique(cc.trc.df$site)
 cc.trc.df$group <- factor(cc.trc.df$group, levels = c("0%", "0-25%", "25-50%", "50-75%","75-100%") )
@@ -860,8 +851,21 @@ cc.trc.df$site <- factor(cc.trc.df$site, levels=c("TS1", "SE1","TS7"))
 
 png('figures/trc_Site_CC.png',width = 900, height = 625,)
 ggarrange( as_ggplot(leg), cc0.trc.p, cc25.trc.p,
-           cc50.trc.p, cc75.trc.p,
-           cc100.trc.p, font.label = list(size = 18),
+           cc50.trc.p, cc75.trc.p, font.label = list(size = 18),
            labels =c('','A', 'B', 'C',
-                     'D', 'E'),nrow=2, ncol=3)
+                     'D'),nrow=2, ncol=3)
 dev.off()
+
+
+# Look at the Model results:
+
+ts1.00.trc
+ts1.25.trc
+ts1.5.trc
+
+se1.5.trc
+se1.75.trc
+
+TS7.00.trc
+TS7.25.trc
+

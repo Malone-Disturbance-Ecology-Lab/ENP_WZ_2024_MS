@@ -10,7 +10,7 @@ library(tidyverse)
 
 # load marl prairie data (TS1 water depth and surface salinity - 2021) ####
 # load TS1 water level from the flux dataset (HOBO logger)
-TSPH1_flux_met <- read.csv("data_raw/AR_TSPH1_2021.csv")
+TSPH1_flux_met <- read.csv("data/data_raw/AR_TSPH1_2021.csv")
 TSPH1_flux_met <- TSPH1_flux_met[-c(1)]
 
 TSPH1_flux_met$TIMESTAMP <- as.POSIXct(TSPH1_flux_met$TIMESTAMP,
@@ -33,7 +33,7 @@ summary(TSPH1_flux_wl)
 # frequency: composite sample every 3 days
 # 1999 - present
 
-TS1_sal <- read_csv("data_raw/LT_ND_Rubio_001.csv")
+TS1_sal <- read_csv("data/data_raw/LT_ND_Rubio_001.csv")
 lapply(TS1_sal, class)
 TS1_sal$Date <- as.Date(TS1_sal$Date, format = "%Y-%m-%d")
 TS1_sal$SITENAME <- as.factor(TS1_sal$SITENAME)
@@ -61,20 +61,23 @@ TS1_wl_sal <- TS1_wl_sal %>%
 # load ecotone data (SE1 water depth and surface salinity - 2021) ####
 
 # water level
-load("data_raw/SE1_WaterLevel.RDATA") #last modified: 4/5/2022 # se.wl.df
-lapply(se.wl.df, class)
+se.wl <- read.csv('data/data_raw/SE_WaterLevel_2020_2022.csv') # se.wl.df
+
+se.wl$TIMESTAMP <- as.POSIXct(se.wl$TIMESTAMP,
+                                 format = "%Y-%m-%d %H:%M:%S",
+                                 tz = "EST")
+
+se.wl.df  <- se.wl %>% 
+  subset(TIMESTAMP>=  as.POSIXct("2021-01-01 00:00:00") &
+           TIMESTAMP< as.POSIXct("2022-01-01 00:00:00")) %>% as.data.frame()  %>% distinct(TIMESTAMP, .keep_all = TRUE) %>% mutate(wl = wl.corr) %>% select(TIMESTAMP, wl)
 
 # met data
-load("data_raw/se1_Data_AllData.RDATA") # se1
+load("data/data_raw/se1_Data_AllData.RDATA") # se1
 
 # fix the timestamps and add a date column to se.wl.df
 se1$TIMESTAMP <- as.POSIXct(se1$TIMESTAMP,  
                                    format= "%Y-%m-%d %H:%M:%S",
                                    tz="EST")
-
-se.wl.df$TIMESTAMP <- as.POSIXct(se.wl.df$TIMESTAMP,  
-                            format= "%Y-%m-%d %H:%M:%S",
-                            tz="EST")
 
 se.wl.df$date <- as.Date(as.character(se.wl.df$TIMESTAMP))
 
@@ -85,15 +88,10 @@ df <- se1 %>%
            date < "2022-01-01") %>%
     as.data.frame()
 
-wl_df <- se.wl.df %>%
-          subset (date >= "2021-01-01" & 
-                  date < "2022-01-01") %>%
+wl_df <- se.wl.df  %>%
           as.data.frame()
 
-which(duplicated(wl_df$TIMESTAMP)) # 14872 14874
-wl_df <- wl_df[!duplicated(wl_df$TIMESTAMP), ]
 
-# only pull out variables we need from the df dataframe
 names(df)
 df2 <- df %>% dplyr::select("TIMESTAMP",  "Year",  "Month", "Day", "Hour", "Doy", "Hour2", "date", 
                             "EC", "Salinity.Hill1986")
@@ -129,7 +127,7 @@ SE1_wl_sal <- SE1_wl_sal %>%
 
 # drop additional date column
 SE1_wl_sal <- SE1_wl_sal[-c(12)] #"date.y"
-
+View(SE1_wl_sal)
 # summarize daily SE1 water level and salinity statistics
 se1daily21 <- SE1_wl_sal %>% 
   group_by(date) %>% 
@@ -150,7 +148,7 @@ SE1_wl_sal <- left_join(SE1_wl_sal, se1daily21, by = "date")
 #TS7 water depth 2001 to present: https://fce-lter.fiu.edu/data/core/metadata/?datasetid=PHY_Castaneda_001 
 # NOTE: hourly water level is recorded in centimeters
 
-Mangrove_wl <- read.csv("data_raw/PHY_Castaneda_001.csv")
+Mangrove_wl <- read.csv("data/data_raw/PHY_Castaneda_001.csv")
 
 # convert the variables to the proper class
 Mangrove_wl$Date <- as.Date(Mangrove_wl$Date, format = "%Y-%m-%d")
@@ -189,7 +187,7 @@ TS7_wl_2 <- TS7_wl %>%
 # TS7 surface salinity from 1996 to 2022: https://fce-lter.fiu.edu/data/core/metadata/?packageid=knb-lter-fce.1074.17 
 # Salinity, TN, and TP are 3 day composite. File name: LT_ND_Losada_001-2
 
-TS7_sal <- read_csv("data_raw/LT_ND_Losada_001-2.csv")
+TS7_sal <- read_csv("data/data_raw/LT_ND_Losada_001-2.csv")
 TS7_sal$SITENAME <- as.factor(TS7_sal$SITENAME)
 TS7_sal_21 <- TS7_sal %>%
   filter(SITENAME == "TS/Ph7a") %>%
@@ -261,6 +259,6 @@ names(weekly21)
 weekly21 <- weekly21[,c(1:2,7,3:6,8)]
 
 # export weekly summary as csv ####
-write.csv(weekly21, "data_processed/AR_wl_sal_2021_weekly.csv", row.names = FALSE)
+write.csv(weekly21, "data/AR_wl_sal_2021_weekly.csv", row.names = FALSE)
 
 # EOF

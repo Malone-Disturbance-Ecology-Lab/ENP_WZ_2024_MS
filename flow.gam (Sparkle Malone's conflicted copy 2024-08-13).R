@@ -5,9 +5,9 @@ library(cmdstanr)
 library(ggplot2)
 
 
-setwd('/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS/')
-df <- read.csv( 'data/AR_wl_sal_2021_weekly.csv')
-
+setwd('/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS')
+df <- read.csv( 'data/data_raw/AR_wl_sal_2021_weekly.csv')
+names(df)
 df$lowWL <- 0
 df$lowWL[df$TS7_mean_weekly_WL < -0.50]<- 1
 df$lowWL <- as.factor(df$lowWL)
@@ -18,7 +18,6 @@ tsph7 <- brm( bf(TS7_mean_weekly_Sal ~ s(TS7_mean_weekly_WL) + arma( p= 1, q=0) 
            data = df, backend = "cmdstanr",iter = 20000, family = gaussian(),
            cores=10, seed=101, refresh = 0, thin=30, chains = 10,
            control = list(adapt_delta = 0.99))
-
 
 summary(tsph7)
 pp_check(tsph7,ndraws = 100) 
@@ -50,10 +49,6 @@ plot.se1.df  <- as.data.frame(plot.se1[[1]])
 
 
 # TS1:
-ggplot() +geom_point(data=df,
-             aes(TS1_mean_weekly_WL, TS1_mean_weekly_Sal) , alpha=0.3 , color="#000099")  +
-  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18)) + ylim(0, 1 )  
-
 
 prior.ts1 <- get_prior(bf(TS1_mean_weekly_Sal ~ s(TS1_mean_weekly_WL) + arma(p= 0, q=1, time=Week)),data = df,  family = gaussian())
 
@@ -74,19 +69,27 @@ plot.ts1 <- conditional_effects(ts1, effects="TS1_mean_weekly_WL", prob = 0.89)
 plot.ts1.df  <- as.data.frame(plot.ts1[[1]])
 
 
-
-
-
 save( df, ts1, plot.ts1, plot.ts1.df,tsph7, plot.tsph7, se1, plot.se1, plot.se1.df, plot.tsph7.df, file="GAMs_Analysis_2024.RDATA"  )
 
 # Figures:    #####
 rm(list=ls())
 
-load(file="GAMs_Analysis_2024.RDATA" )
+load("~/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/GAMs_Analysis_2024 (Sparkle Malone's conflicted copy 2024-08-12).RDATA")
 
-tsph1.plot <- ggplot() +geom_point(data=df,
+# Look at model results
+ts1
+se1
+tsph7
+
+
+
+
+
+
+
+tsph7.plot <- ggplot() +geom_point(data=df,
                      aes(TS1_mean_weekly_WL, TS1_mean_weekly_Sal) , alpha=0.3 , color="#000099")  +
-  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18)) + ylim(0, 1 )  + xlim(0.25, 0.6)
+  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18)) + ylim(0, 1 )  
 
 
 tsph7.plot <- ggplot() +
@@ -117,7 +120,8 @@ ts1.plot <- ggplot() +
               alpha=0.1, fill = "#000099",  color="transparent") +
   geom_point(data=df,
              aes(TS1_mean_weekly_WL, TS1_mean_weekly_Sal) , alpha=0.3 , color="#000099")  +
-  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18))   + ylim(0,1)  + xlim(0.3, 0.525)
+  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18))   +
+  ylim(0,1) + xlim(0.3, 0.525)
 
 
 library(ggpubr)
@@ -126,3 +130,4 @@ png(file="figures/WaterLvesvsSalinity_2024.png",
     width=800, height=300)
 ggarrange(ts1.plot, se1.plot,tsph7.plot,  ncol = 3, labels = c("A","B", "C"))
 dev.off()
+
