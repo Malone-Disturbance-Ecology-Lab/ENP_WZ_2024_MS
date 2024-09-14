@@ -8,12 +8,12 @@ library(terra)
 library(tidyterra)
 
 # Import vegetation layers and simplify: ####
-enp.eco <- read_sf(dsn="/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles", layer="SaltMarsh" )
-enp.Prairie <- read_sf(dsn="/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles", layer="Prairie" )
-enp.fwm <- read_sf(dsn="/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles", layer="FreshwaterMarsh" )
+enp.eco <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="SaltMarsh" )
+enp.Prairie <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="Prairie" )
+enp.fwm <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="FreshwaterMarsh" )
 
-enp.msl <- read_sf(dsn="/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles", layer="MangroveShrubland" )
-enp.ms <- read_sf(dsn="/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles", layer="MangroveScrub" )
+enp.msl <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="MangroveShrubland" )
+enp.ms <- read_sf(dsn="/Volumes/MaloneLab/Research/ENP/VegetationMap/Data", layer="MangroveScrub" )
 
 enp.fwm <- rbind(enp.fwm, enp.Prairie )
 enp.msc <- rbind(enp.msl, enp.ms)
@@ -39,7 +39,7 @@ enp.msc.d <- enp.msc[enp.msc$msc == 1, ] %>% # select the central parts
 ggplot() + geom_sf(data=enp.msc.d )
 
 # Import ENP and make a grid ####
-enp <- read_sf(dsn="/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles", layer="ENP")
+enp <- st_read( "/Volumes/MaloneLab/Research/ENP/Everglades_NP.shp")
 enp.trans <- enp %>% st_transform(26917)
 enp.grid <- st_make_grid(enp.trans , cellsize = 500, what = "centers")
 
@@ -99,7 +99,7 @@ veg <- as.factor(veg)
 library(ggplot2)
 library(tidyterra)
 
-enp.se <- read_sf("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles/Southeastern Everglades_AOI.kml" ) 
+enp.se <- read_sf("/Volumes/MaloneLab/Research/ENP/The Whitezone/WL+SAL/Data/Southeastern Everglades_AOI.kml" ) 
 
 enp.se <- enp.se %>% st_make_valid() %>% st_transform(26917) %>% st_buffer(4000)
 enp.shade <- enp %>% st_transform(26917) %>% st_difference(enp.se)  
@@ -143,9 +143,9 @@ dev.off()
 # Subset by the se!
 veg$Diatance <- dist.fwm_raster
 veg$veg.gC <- dist.fwm_raster
-veg$veg.gC[veg$veg == 1] <- -294*1000000 # there are 1000000 sq meters in an 1k resolution area
-veg$veg.gC[veg$veg == 2] <- -47*1000000
-veg$veg.gC[veg$veg == 3] <- -81*1000000
+veg$veg.gC[veg$veg == 1] <- -291.6616*1000000 # there are 1000000 sq meters in an 1k resolution area
+veg$veg.gC[veg$veg == 2] <- -19.08183*1000000
+veg$veg.gC[veg$veg == 3] <- -74.01228*1000000
 
 # Update the veg class with distance
 veg$veg2 <- veg
@@ -155,14 +155,14 @@ veg$veg2[veg$veg == 3] <- 1
 veg$veg2[veg$Diatance > 3 ] <- 2
 
 veg$veg.gC.century <- veg$veg.gC
-veg$veg.gC.century[veg$veg2 == 1] <- -294*1000000
-veg$veg.gC.century[veg$veg2 == 2] <- -47*1000000
-veg$veg.gC.century[veg$veg2 == 3] <- -81*1000000
+veg$veg.gC.century[veg$veg2 == 1] <- -291.6616*1000000
+veg$veg.gC.century[veg$veg2 == 2] <- -19.08183*1000000
+veg$veg.gC.century[veg$veg2 == 3] <- -74.01228*1000000
 
 # Subset information for the southeastern saline everglades:
 
 
-enp.se <- read_sf("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles/Southeastern Everglades_AOI.kml" ) 
+enp.se <- read_sf("/Volumes/MaloneLab/Research/ENP/The Whitezone/WL+SAL/Data/Southeastern Everglades_AOI.kml" ) %>% st_transform( 26917)
 
 veg.se <- terra::crop(veg, enp.se) %>% terra::mask( enp.se)
 
@@ -170,10 +170,9 @@ veg.se <- terra::crop(veg, enp.se) %>% terra::mask( enp.se)
 # Annual exchange of C
 terra::global(veg.se$veg.gC, sum, na.rm=T)/ 1000000000  # Giga ton of carbon
 
-FWM.Gt <- sum( veg.se$veg.gC[ veg.se$veg == 2], na.rm=T)/ 1000000000 # in meteric ton of carbon
-MS.Gt <-sum( veg.se$veg.gC[ veg.se$veg == 1], na.rm=T)/ 1000000000 # in meteric ton of carbon
-BE.Gt <- sum( veg.se$veg.gC[ veg.se$veg == 3], na.rm=T)/ 1000000000 # in meteric ton of carbon
-FWM.Gt + MS.Gt + BE.Gt
+sum( veg.se$veg.gC[ veg.se$veg == 2], na.rm=T)/ 1000000000 # in meteric ton of carbon
+sum( veg.se$veg.gC[ veg.se$veg == 1], na.rm=T)/ 1000000000 # in meteric ton of carbon
+sum( veg.se$veg.gC[ veg.se$veg == 3], na.rm=T)/ 1000000000 # in meteric ton of carbon
 
 # area (ENP is 610460.2 ha) 
 veg.se$area <- terra:: cellSize( veg.se,unit="ha")
@@ -181,13 +180,10 @@ sum(veg.se$area[veg.se$veg == 1]); sum(veg.se$area[veg.se$veg == 1])/610670*100
 sum(veg.se$area[veg.se$veg == 2]) ; sum(veg.se$area[veg.se$veg == 2])/610670*100
 sum(veg.se$area[veg.se$veg == 3]); sum(veg.se$area[veg.se$veg == 3])/610670*100
 
-(sum(veg.se$area[veg.se$veg == 1])/610670*100) + (sum(veg.se$area[veg.se$veg == 2])/610670*100) + (sum(veg.se$area[veg.se$veg == 3])/610670*100)
 plot(veg.se$veg.gC.century)
 
 
 terra::global(veg.se$veg.gC.century, sum, na.rm=T)/ 1000000000  # in giga grams or Gg
 sum( veg.se$veg.gC.century[ veg.se$veg2 == 2], na.rm=T)/ 1000000000 # in meteric ton of carbon
-sum( veg.se$veg.gC.century[ veg.se$veg2 == 1], na.rm=T)/ 1000000000 # in meteric ton of carbon
-sum( veg.se$veg.gC.century[ veg.se$veg2 == 3], na.rm=T)/ 1000000000 # in meteric ton of carbon
-
-1-115/131
+sum( veg.se$veg.gC.century[ veg.se$veg2 == 1], na.rm=T)/ 1000000 # in meteric ton of carbon
+sum( veg.se$veg.gC.century[ veg.se$veg2 == 3], na.rm=T)/ 1000000 # in meteric ton of carbon

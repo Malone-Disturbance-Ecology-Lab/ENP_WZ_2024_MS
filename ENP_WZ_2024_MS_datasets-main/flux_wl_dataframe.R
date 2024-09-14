@@ -1,8 +1,7 @@
-# Flux data retrieval and dataframe creation (Amanda)
+# Flux data retrieval and dataframe creation
 
 # this script is for pulling flux, met, and water level data together for all sites in 2021
 # last updated: AR, 11/5/2023
-# last updated: SM, 08/11/2024
 
 # Clear environment
 rm(list = ls())
@@ -10,50 +9,65 @@ rm(list = ls())
 # load packages
 library(tidyverse)   # everything 
 
-setwd("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/data_raw")
 # make se1 csv with fluxes, met and water level information ####
 
+# water level
+load("data_raw/SE1_WaterLevel.RDATA") # se.wl.df
+lapply(se.wl.df, class)
+
 # met data
-load("SE1_Data_AllData.RDATA") # se1
+load("data_raw/se1_Data_AllData.RDATA") # se1
 
 # prepare se1 data to be one dataframe 
 se1$TIMESTAMP <- as.POSIXct(se1$TIMESTAMP,
                             format = "%Y-%m-%d %H:%M:%S",
                             tz = "EST")
 
-df <- se1 %>% subset(date>= "2021-01-01" & 
+df <- se1 %>% 
+  subset(date>= "2021-01-01" & 
            date< "2022-01-01") %>%
   as.data.frame()
 
-se.wl.df <- read.csv('SE_WaterLevel_2020_2022.csv') # se.wl.df
-
 se.wl.df$TIMESTAMP <- as.POSIXct(se.wl.df$TIMESTAMP,
-                                 format = "%Y-%m-%d %H:%M:%S",
-                                 tz = "EST")
-wl_df <- se.wl.df %>% 
-  subset(TIMESTAMP>=  as.POSIXct("2021-01-01 00:00:00") &
-           TIMESTAMP< as.POSIXct("2022-01-01 00:00:00")) %>% as.data.frame()  %>% distinct(TIMESTAMP, .keep_all = TRUE) %>% mutate(wl = wl.corr) %>% select(TIMESTAMP, wl)
+                            format = "%Y-%m-%d %H:%M:%S",
+                            tz = "EST")
+
+#wl_df <- subset (se.wl.df, TIMESTAMP>= "2021-01-01 00:00:00" & 
+#                   TIMESTAMP< "2022-01-01 00:00:00") 
+
+which(se.wl.df$TIMESTAMP== "2022-01-01 00:00:00")
+
+wl_df <- as.data.frame(se.wl.df[c(17589:35108),])
+
+which(duplicated(wl_df$TIMESTAMP))
+wl_df <- wl_df[!duplicated(wl_df$TIMESTAMP), ]
 
 # only pull out variables we need
-df2 <- df %>% dplyr::select("TIMESTAMP",  "NEE.filtered",  "TA.f", "PAR.f") %>% distinct(TIMESTAMP, .keep_all = TRUE)
+df2 <- df %>% dplyr::select("TIMESTAMP",  "NEE.filtered",  "TA.f", "PAR.f")
+
+# df2 has 22710, wl_df has 17520 observations --> drop duplicate timestamps in df2
+which(duplicated(df2$TIMESTAMP))
+df2 <- df2[!duplicated(df2$TIMESTAMP), ]
 
 # merge water level into df2 
 df2 <- left_join(df2, wl_df, by = "TIMESTAMP")
+which(duplicated(df2$TIMESTAMP))
 
+lapply(df2, class)
 df2$TIMESTAMP<- format(df2$TIMESTAMP, "%Y-%m-%d %H:%M:%S")
 
 # save as csv like other station datasets
-write.csv(df2, "AR_SE1_2021.csv", row.names = F)
+write.csv(df2, "data_raw/AR_SE1_2021.csv", row.names = F)
 
 rm(list = ls())
 
 # load flux and met data from the server, TSPH1, TSPH7, SE1 ###########################
 
-TSPH1 <- read.csv("AR_TSPH1_2021.csv")
-SE1 <- read.csv("AR_SE1_2021.csv")
-TSPH7 <- read.csv("AR_TSPH7_2021.csv")
+TSPH1 <- read.csv("data_raw/AR_TSPH1_2021.csv")
+SE1 <- read.csv("data_raw/AR_SE1_2021.csv")
+TSPH7 <- read.csv("data_raw/AR_TSPH7_2021.csv")
 
-
+# drop the additional X columns in all of the files
 TSPH1 <- TSPH1[-c(1)]
 TSPH7 <- TSPH7[-c(1)]
 
@@ -134,7 +148,7 @@ rm(TS7.NEE.avg, TS7.TA.avg)
 #https://fce-lter.fiu.edu/data/core/metadata/?datasetid=PHY_Castaneda_001 
 # NOTE: water level is recorded in centimeters
 
-Mangrove_wl <- read.csv("PHY_Castaneda_001.csv")
+Mangrove_wl <- read.csv("data_raw/PHY_Castaneda_001.csv")
 
 TSPH7_wl <- Mangrove_wl %>%
   filter(SITENAME == "TS/Ph7") %>% # only TS7
@@ -279,9 +293,8 @@ WZ_df$TS7WLindicator[WZ_df$TS7_daily_wl > 0.375 & WZ_df$TS7_daily_wl  <= 0.75] <
 WZ_df$TS7WLindicator <- as.factor(WZ_df$TS7WLindicator)
 summary(WZ_df$TS7WLindicator)
 
-summary(WZ_df$SE1WLindicator )
+
 # save as csv for later use ########################################################################
-write.csv(WZ_df, "AR_flux_sites_2021.csv", row.names = FALSE)
+write.csv(WZ_df, "data_processed/AR_flux_sites_2021.csv", row.names = FALSE)
 
 # EOF
-

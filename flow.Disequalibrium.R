@@ -8,80 +8,34 @@ library(ggplot2)
 library(terra)
 library(tidyterra)
 
-setwd('/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS')
-
 load('data/Budget_Opt.RDATA' )
 load('data/Landscape_C.RDATA')
-load('data/UncertaintyAnnual.RDATA')
 
 #DE
-ts1.gf.opt$DE.Pmax <- ( min(ts1.gf.opt$Pmax,na.rm=T)- ts1.gf.opt$Pmax ) / min(ts1.gf.opt$Pmax,na.rm=T) *100
-ts7.gf.opt$DE.Pmax <- ( min(ts7.gf.opt$Pmax,na.rm=T)- ts7.gf.opt$Pmax ) / min(ts7.gf.opt$Pmax,na.rm=T)*100
-se1.gf.opt$DE.Pmax <- ( min(se1.gf.opt$Pmax,na.rm=T)- se1.gf.opt$Pmax ) / min(se1.gf.opt$Pmax,na.rm=T)*100
+ts1.gf.opt$DE.Pmax <- ( min(ts1.gf.opt$Pmax,na.rm=T)- ts1.gf.opt$Pmax ) / min(ts1.gf.opt$Pmax,na.rm=T)
+ts7.gf.opt$DE.Pmax <- ( min(ts7.gf.opt$Pmax,na.rm=T)- ts7.gf.opt$Pmax ) / min(ts7.gf.opt$Pmax,na.rm=T)
+se1.gf.opt$DE.Pmax <- ( min(se1.gf.opt$Pmax,na.rm=T)- se1.gf.opt$Pmax ) / min(se1.gf.opt$Pmax,na.rm=T)
 
+unique(ts7.gf.opt$DE.Pmax)
 
+extension <- data.frame( DE.Pmax.ts1 = 0.3421 , WL.ts1 = c(0.5, 1),
+                         DE.Pmax.ts1.2 = 0 , WL.ts1.2 = c(-0.5, 0),
+                         DE.Pmax.se1 = c(0.20134,0.20134)   , WL.se1 = c(-0.5,0.40),
+                         DE.Pmax.se1.2 = c(0.1521253, 0.1521253)   , WL.se1.2 = c( 0.75, 1),
+                         DE.Pmax.ts7 = c(0.07065217 ,0.07065217 ) , WL.ts7 = c(-0.5,0),
+                         DE.Pmax.ts7.2 = c(0 ,0 ) , WL.ts7.2 = c(0,1))
+names(df)
+Plot.DE.Pmax <- ggplot( ) + geom_line( data= ts1.gf.opt, aes( x=TS1_daily_wl, y= DE.Pmax), col="darkblue", linewidth=2) +
+  geom_line( data= se1.gf.opt, aes( x=SE1_daily_wl, y= DE.Pmax), col="#fab255", linewidth=2) +
+  geom_line( data= ts7.gf.opt, aes( x=TS7_daily_wl, y= DE.Pmax),col= "#43b284", linewidth=2) + 
+  geom_line( data= extension, aes( x=WL.ts1, y= DE.Pmax.ts1), col="darkblue", linewidth=2, linetype = "dotted") +
+  geom_line( data= extension, aes( x=WL.ts1.2, y= DE.Pmax.ts1.2), col="darkblue", linewidth=2, linetype = "dotted") +
+  geom_line( data= extension, aes( x=WL.se1, y= DE.Pmax.se1), col="#fab255", linewidth=2, linetype = "dotted") +
+  geom_line( data= extension, aes( x=WL.se1.2, y= DE.Pmax.se1.2), col="#fab255", linewidth=2, linetype = "dotted") +
+  geom_line( data= extension, aes( x=WL.ts7, y= DE.Pmax.ts7),col= "#43b284", linewidth=2, linetype = "dotted") + 
+  geom_line( data= extension, aes( x=WL.ts7.2, y= DE.Pmax.ts7.2),col= "#43b284", linewidth=2, linetype = "dotted") +
+  theme_bw() + ylab( expression(paste(Delta,"Pmax"))) + xlab( "Water Level (m)") + theme(text = element_text(size = 25))
 
-TS1.DE <- rbind(ts1.gf.opt %>% group_by(Submergence) %>% summarise( 
-  DE.Pmax = mean(DE.Pmax),
-  WL = round(min(TS1_daily_wl, na.rm=T), 1)) %>% na.omit() ,
-  ts1.gf.opt %>% group_by(Submergence) %>% summarise( 
-    DE.Pmax = mean(DE.Pmax),
-    WL = round(max(TS1_daily_wl, na.rm=T), 1)) %>% na.omit() )
-
-
-SE1.DE <- rbind(se1.gf.opt %>% group_by(Submergence) %>% summarise( 
-  DE.Pmax = mean(DE.Pmax),
-  WL = min(SE1_daily_wl, na.rm=T)) %>% na.omit(), se1.gf.opt %>% group_by(Submergence) %>% summarise( 
-    DE.Pmax = mean(DE.Pmax),
-    WL = max(SE1_daily_wl, na.rm=T)) %>% na.omit())
-
-TS7.DE <- rbind(ts7.gf.opt %>% group_by(Submergence) %>% summarise( 
-  DE.Pmax = mean(DE.Pmax),
-  WL = min(TS7_daily_wl, na.rm=T)) %>% na.omit(),
-  ts7.gf.opt %>% group_by(Submergence) %>% summarise( 
-    DE.Pmax = mean(DE.Pmax),
-    WL = max(TS7_daily_wl, na.rm=T)) %>% na.omit())
-
-TS1.DE %>% arrange(Submergence)
-
-Extrap <- rbind(data.frame(Site = c("TS1", "TS1"), 
-                     WL=c(-0.5, 0), 
-                     DE.Pmax = min(TS1.DE$DE.Pmax), 
-                     line=1),
-                data.frame(Site = c("TS1", "TS1"), 
-                           WL=c(0.5, 1), 
-                           DE.Pmax = max(TS1.DE$DE.Pmax), 
-                           line=2),
-                data.frame(Site = c("SE1", "SE1"), 
-                           WL=c(-0.5, 0.25), 
-                           DE.Pmax = min(SE1.DE$DE.Pmax), 
-                           line=1),
-                data.frame(Site = c("SE1", "SE1"), 
-                           WL=c(0.5, 1), 
-                           DE.Pmax = max(SE1.DE$DE.Pmax), 
-                           line=2),
-                data.frame(Site = c("TS7", "TS7"), 
-                           WL=c(0.5, 1), 
-                           DE.Pmax = min(SE1.DE$DE.Pmax), 
-                           line=1),
-                data.frame(Site = c("TS7", "TS7"), 
-                           WL=c(-0.5, 0), 
-                           DE.Pmax = max(SE1.DE$DE.Pmax), 
-                           line=2))
-
-
-
-
-Plot.DE.Pmax <- ggplot( ) + geom_line( data= TS1.DE %>% arrange(Submergence), aes( x=WL, y= DE.Pmax), col="darkblue", linewidth=2) + xlim(-0.5, 1)+
-  geom_line( data=SE1.DE %>%arrange(Submergence), aes( x=WL, y= DE.Pmax), col="#fab255", linewidth=2) +
-  geom_line( data= TS7.DE %>%arrange(Submergence), aes( x=WL, y= DE.Pmax),col= "#43b284", linewidth=2) +
-  geom_line( data= Extrap %>% filter(Site == "TS1", line==1), aes( x=WL, y= DE.Pmax), col="darkblue", linewidth=2, linetype = "dotted") +
-  geom_line( data= Extrap %>% filter(Site == "TS1", line==2), aes( x=WL, y= DE.Pmax), col="darkblue", linewidth=2, linetype = "dotted") +
-  geom_line( data= Extrap %>% filter(Site == "SE1", line==1), aes( x=WL, y= DE.Pmax), col="#fab255", linewidth=2, linetype = "dotted") +
-  geom_line( data= Extrap %>% filter(Site == "SE1", line==2), aes( x=WL, y= DE.Pmax), col="#fab255", linewidth=2, linetype = "dotted") +
-  geom_line( data= Extrap %>% filter(Site == "TS7", line==1), aes( x=WL, y= DE.Pmax), col="#43b284", linewidth=2, linetype = "dotted") +
-  geom_line( data= Extrap %>% filter(Site == "TS7", line==2), aes( x=WL, y= DE.Pmax), col="#43b284", linewidth=2, linetype = "dotted") +
-  theme_bw() + ylab( expression(paste(Delta,"Pmax (%)"))) + xlab( "Water Level (m)") + theme(text = element_text(size = 25))
 
 names(ts1.gf.opt)
 ts1.gf.opt$count <- 1
@@ -105,7 +59,6 @@ plot.ts1.dde <- ts1.gf.opt %>% group_by(TIMESTAMP) %>% summarise(NEE.gc = sum(NE
   geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.Modeled.opt.gc)), col="darkblue", linetype = "dotted",linewidth=2) + theme_bw() + xlab("") + 
   ylab(expression(paste('NEE ( g C  m'^2, ' day'^-1, ')'))) + theme(text = element_text(size = 20),axis.text=element_text(size=15) , axis.text.x=element_text(angle = 60, vjust = 1, hjust = 1))
 
-summary(se1.gf.opt)
 plot.se1.dde <- se1.gf.opt %>% group_by(TIMESTAMP) %>% summarise(NEE.gc = sum(NEE.gc) , NEE.Modeled.opt.gc = sum(NEE.Modeled.opt.gc)) %>%  
   ggplot() + geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.gc)), col="#fab255",linewidth=2)+
   geom_line( aes(x=TIMESTAMP , y=cumsum( NEE.Modeled.opt.gc)), col="#fab255", linetype = "dotted",linewidth=2) + theme_bw()+ xlab("") + 
@@ -131,17 +84,15 @@ simulation.1 <- ggplot() + geom_spatraster(data = veg$veg.p, na.rm = TRUE,show.l
                     labels =c("Saline Scrub Mangrove","Freshwater Marl Praire","Brakish Ecotone", ""))+
   labs( fill="" ) +
   geom_spatraster_contour(data = dist.fwm_raster, breaks =seq(1, 50, 1.5), na.rm = TRUE, col="lightblue4")+
-  geom_sf(data= enp.shade, alpha=0.8, col="transparent") + theme_bw()+theme(legend.position = "top") + theme(axis.text=element_text(size=15), text = element_text(size = 25))
+  geom_sf(data= enp.shade, alpha=0.5, col="transparent") + theme_bw()+theme(legend.position = "top") + theme(axis.text=element_text(size=15), text = element_text(size = 25))
 
-simulation.1
 
 library(gridExtra)
 
 png('figures/Disequalibrium_CC.png',width = 1450, height =900)
 grid.arrange( Plot.DE.Pmax+labs(tag="A"), plot.ts1.dde+labs(tag="C"),
-              plot.se1.dde+labs(tag="D"), plot.ts7.dde +labs(tag="E") ,simulation.1+labs(tag="B") , 
-              layout_matrix = rbind(c(1,1,1,5,5,5),                                                                                  
-                                    c(1,1,1,5,5,5),
+              plot.se1.dde+labs(tag="D"), plot.ts7.dde +labs(tag="E") ,simulation.1+labs(tag="B") , layout_matrix = rbind(c(1,1,1,5,5,5),
+                                                                                                                          c(1,1,1,5,5,5),
                                     c(2,2,3,3,4,4)))
 
 dev.off()

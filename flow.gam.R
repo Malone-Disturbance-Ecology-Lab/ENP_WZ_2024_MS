@@ -84,9 +84,9 @@ rm(list=ls())
 
 load(file="GAMs_Analysis_2024.RDATA" )
 
-tsph1.plot <- ggplot() +geom_point(data=df,
+tsph7.plot <- ggplot() +geom_point(data=df,
                      aes(TS1_mean_weekly_WL, TS1_mean_weekly_Sal) , alpha=0.3 , color="#000099")  +
-  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18)) + ylim(0, 1 )  + xlim(0.25, 0.6)
+  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18)) + ylim(0, 1 )  
 
 
 tsph7.plot <- ggplot() +
@@ -117,7 +117,7 @@ ts1.plot <- ggplot() +
               alpha=0.1, fill = "#000099",  color="transparent") +
   geom_point(data=df,
              aes(TS1_mean_weekly_WL, TS1_mean_weekly_Sal) , alpha=0.3 , color="#000099")  +
-  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18))   + ylim(0,1)  + xlim(0.3, 0.525)
+  theme_minimal() + xlab('Water Level (m)') + ylab('Salinity (PSU)') + theme(text = element_text(size = 18))   + ylim(0,1)
 
 
 library(ggpubr)
