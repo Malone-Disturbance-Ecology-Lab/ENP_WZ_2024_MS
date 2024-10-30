@@ -159,7 +159,7 @@ sitemap_no_base <- ggplot() +  theme_bw() + theme(panel.grid.major = element_bla
   coord_sf(xlim = lon_lims, ylim = lat_lims, expand = FALSE)  +
   scale_shape_manual(name = "",    
                      values = shapes, 
-                     labels = c("Eddy Covariance Tower & LTER Site", "Long Term Hydrologic Station"),
+                     labels = c("EC Tower", "Long-term Hydrologic Station"),
                      guide = guide_legend(reverse = TRUE)) +     # makes a legend for the site type
   theme(   
     legend.position = "bottom",
@@ -171,14 +171,14 @@ sitemap_no_base <- ggplot() +  theme_bw() + theme(panel.grid.major = element_bla
   ggspatial::annotation_north_arrow(location = "br", which_north = "true", 
                                     pad_x = unit(0.2, "in"), pad_y = unit(0.2, "in"),
                                     style = north_arrow_fancy_orienteering(fill = c("white", "gray50"), text_size = 14, text_col = "gray30")) + # adds north arrow
-  annotate(geom="text", x = -8971750, y = 2929627, label = "Marl Prairie", color = "gray10", hjust= 1, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are / hjust=0.8, vjust = -1.2 / hjust=1.2, vjust = -0.1, hjust=-0.2, vjust = 0.15, 
-  annotate(geom="text", x = -8947972, y = 2919276, label = "Ecotone", color = "gray10", hjust= 0.65, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are  
-  annotate(geom="text", x = -8977035, y = 2899932, label = "Scrub Mangrove", color = "gray10", hjust= 0.9, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are  
-  annotate(geom="text", x = -8958874, y = 2918296, label = "Inland", color = "gray10", hjust= 1.2, vjust=-1.3, size = 5.5) + # adds annotation to the map points so we know what the sites are
-  annotate(geom="text", x = -8955015, y = 2906995, label = "Coastal", color = "gray10", hjust= 1, vjust=-1.4, size = 5.5) + # adds annotation to the map points so we know what the sites are  
+  annotate(geom="text", x = -8971750, y = 2929627, label = "Marl Prairie", color = "gray10", hjust= 1, vjust=-1.3, size = 6) + # adds annotation to the map points so we know what the sites are / hjust=0.8, vjust = -1.2 / hjust=1.2, vjust = -0.1, hjust=-0.2, vjust = 0.15, 
+  annotate(geom="text", x = -8947972, y = 2919276, label = "Ecotone", color = "gray10", hjust= 0.65, vjust=-1.3, size = 6) + # adds annotation to the map points so we know what the sites are  
+  annotate(geom="text", x = -8977035, y = 2899932, label = "Scrub Mangrove", color = "gray10", hjust= 0.8, vjust=-1.3, size = 6) + # adds annotation to the map points so we know what the sites are  
+  #annotate(geom="text", x = -8958874, y = 2918296, label = "Inland", color = "black", hjust= 1.1, vjust=-0.1, size = 5.5) + # adds annotation to the map points so we know what the sites are
+ # annotate(geom="text", x = -8955015, y = 2906995, label = "Coastal", color = "black", hjust= 1, vjust=-1.4, size = 5.5) + # adds annotation to the map points so we know what the sites are  
   
-  geom_text(TSL.sf, mapping = aes(x = -8983000, y = 2917000, label = "Taylor Slough"), color = "lightskyblue", size = 4.5, angle = 55, fontface = "italic") +
-  geom_text(ENP.sf, mapping = aes(x = -9000500, y = 2948500, label = "Everglades National Park"), color = "peru", size = 4.5, fontface = "italic")  #(x = -8995000, y = 2971000) ENP label outside the park outline
+  geom_text(TSL.sf, mapping = aes(x = -8983000, y = 2917000, label = "Taylor Slough"), color = "lightskyblue", size = 5.5, angle = 55, fontface = "italic", hjust= 0.45) +
+  geom_text(ENP.sf, mapping = aes(x = -9000500, y = 2948500, label = "Everglades National Park"), color = "peru", size = 5.5, fontface = "italic")  #(x = -8995000, y = 2971000) ENP label outside the park outline
 
 
 # make an inset map of FL with an annotated box over the SESE ####
@@ -198,10 +198,11 @@ FL_inset <-  ggplot() + theme_bw() + theme(panel.grid.major = element_blank()) +
 # export sitemap figure ####
 setwd("/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS/figures")
 
-png(filename = "sitemap_nobase.png", 
-    width = 8, height = 8,  units = "in", res = 300, bg = "transparent") # 8, 7.5
+png(filename = "flow.site.maps.png", 
+    width = 8, height = 8,  units = "in", res = 400, bg = "transparent") # 8, 7.5
 
 sitemap_no_base + ggpubr::rotate_x_text(45)+ inset_element(FL_inset, left = 0.01, bottom = 0, right = 0.25, top = 0.33) &
-  theme(text=element_text(size=18)) 
+  theme(text=element_text(size=24)) 
 
 dev.off()
+
