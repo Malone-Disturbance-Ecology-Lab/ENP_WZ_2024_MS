@@ -35,6 +35,7 @@ st_crs(mapsites.sf) <- st_crs(enp.se)
 
 enp.se %>% ggplot() + geom_sf() + geom_sf(data=mapsites.sf)
 
+enp.se.shade <- st_read("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles/SE-Shade.shp")
 
 # make attribute information for points into factors
 mapsites.sf$site <- as.factor(mapsites.sf$site)
@@ -80,7 +81,7 @@ shapes <- c(19, 17)
 sitemap_no_base <- ggplot() +  
   theme_bw() + 
   theme(panel.grid.major = element_blank()) +
-  geom_sf(FL.complex.sf, mapping = aes(), color = "black", fill = "gray90", lwd = 0.25) + # FL polygon
+  geom_sf(FL.complex.sf, mapping = aes(), color = "black", fill = "gray95", lwd = 0.25) + # FL polygon
   geom_sf(enp.se, mapping = aes(), color = "black", fill = "gray50", lwd = 0.5) + 
   coord_sf(xlim = lon_lims, ylim = lat_lims, expand = FALSE)  +
   geom_sf(ENP.sf, mapping = aes(), color = "peru", fill = "peru", alpha = 0, lwd = 0.75, show.legend = FALSE) +  # Everglades National Park polygon
@@ -110,9 +111,8 @@ st_bbox(FL.sf)
 
 FL_inset <-  ggplot() + theme_bw() + theme(panel.grid.major = element_blank()) +
   labs(x = NULL, y = NULL) + 
-  geom_sf(FL.sf, mapping = aes(), color = "black", fill = "gray90", lwd = 0.25) + 
-  annotate(geom = "rect", xmin = -9025000, xmax =-8920000, ymin = 2870000, ymax = 2950000, color = "black", fill = NA, lwd = 0.75) +
-  geom_text(FL.sf, mapping = aes(x = -9550000, y = 2870000, label = "Florida"), color = "black", size = 5.5) +
+  geom_sf(FL.sf, mapping = aes(), color = "black", fill = "gray90", lwd = 0.25) +
+  geom_text(FL.sf, mapping = aes(x = -85, y = 25, label = "Florida"), color = "black", size = 5.5) +
   theme(axis.text.x=element_blank(),
       axis.ticks.x=element_blank(),
       axis.text.y=element_blank(),
@@ -122,7 +122,7 @@ FL_inset <-  ggplot() + theme_bw() + theme(panel.grid.major = element_blank()) +
 # export sitemap figure ####
 setwd("/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS/figures")
 
-png(filename = "flow.site.maps.png", 
+png(filename = "flow.site.maps_NoLabels.png", 
     width = 8, height = 8,  units = "in", res = 400, bg = "transparent") # 8, 7.5
 
 sitemap_no_base + ggpubr::rotate_x_text(45)+ inset_element(FL_inset, left = 0.01, bottom = 0, right = 0.25, top = 0.33) &

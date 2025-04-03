@@ -18,6 +18,7 @@ df$month <- stringr::str_pad(df$Month, 2, pad = "0")
 df$YM <- paste( df$Year, df$month, sep="-")
 df$yearmon <- as.yearmon(df$YM )
 
+# Trend Analysis: ####
 
 # long term inland
 npev8 <- df %>% dplyr::select(yearmon, NPEV8_mean_mon_WL)
@@ -236,7 +237,7 @@ TS7.sal$trend$cp
 TS7.sal$trend$cpPr
 
 save(ENPHC, NPEV8 , TS7, TS1,
-     ENPHC.sal, NPEV8.sal , TS7.sal, TS1.sal, file = "/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS/flow.Trend.RDATA")
+     ENPHC.sal, TS7.sal, TS1.sal, file = "/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS/flow.Trend.RDATA")
 
 # Summaries of the salinity trends in the data ####
 
@@ -313,6 +314,7 @@ write.csv( final.cp.summary, "final.cp.summary.csv")
 
 # make WL plots for panel ####
 
+load("/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS/flow.Trend.RDATA")
 
 A <- ggplot() + geom_point(aes(y=ENPHC$data, x=ENPHC$time), col= "#43b284", alpha=0.2, size=3) +
   geom_line( aes(x=ENPHC$time, y=ENPHC$trend$Y), col= "#43b284", size=2.0) +
@@ -322,8 +324,8 @@ A <- ggplot() + geom_point(aes(y=ENPHC$data, x=ENPHC$time), col= "#43b284", alph
   geom_line( aes(x=NPEV8$time, y=NPEV8$trend$Y), col="darkblue", size=2.0) +
   geom_line( aes(x=NPEV8$time, y=NPEV8$data),col="darkblue", alpha=0.2) + 
   geom_vline(xintercept=NPEV8$trend$cp[1:2],col="darkblue", alpha=0.5 , linetype="dashed", size=1) +
-  annotate(geom="text", x=2013, y=1.5, hjust = 0, label= "Inland", color= "darkblue", size=7) +
-  annotate(geom="text", x=2013, y=1.25, hjust = 0, label= "Coastal", color= "#43b284", size=7) + 
+  annotate(geom="text", x=2013, y=1.5, hjust = 0, label= "HC", color= "darkblue", size=7) +
+  annotate(geom="text", x=2013, y=1.25, hjust = 0, label= "EVER8", color= "#43b284", size=7) + 
   xlim(1993,2022) + ylim(-0.6,1.6) + 
   ylab("Water Level (m)") + xlab("") + theme_light() + theme(text = element_text(size = 25))
 
@@ -345,7 +347,7 @@ C <- ggplot() + geom_point(aes(y=ENPHC.sal$data, x=ENPHC.sal$time), col="#43b284
   geom_line( aes(x=ENPHC.sal$time, y=ENPHC.sal$trend$Y), col="#43b284", size=2.0) +
   geom_line( aes(x=ENPHC.sal$time, y=ENPHC.sal$data),col="#43b284", alpha=0.2) + 
   geom_vline(xintercept=ENPHC$trend$cp[1:2],col="#43b284", alpha=0.5 , linetype="dashed", size=1) +
-  ylim(0,50) + ylab("Salinity (PSU)") + xlab("") + theme_light() + theme(text = element_text(size = 25))
+  ylim(0,50) + ylab("Salinity (PSU)") + xlab("") + theme_light() + theme(text = element_text(size = 25)) +  annotate(geom="text", x=1995, y=50, hjust = 0, label= "EVER8", color= "#43b284", size=7)
 
 D <- ggplot() + geom_point(aes(y=TS7.sal$data, x=TS7.sal$time), col= "#43b284", alpha=0.2, size=3) +
   geom_line( aes(x=TS7.sal$time, y=TS7.sal$trend$Y), col= "#43b284", size=2.0) +
@@ -356,12 +358,13 @@ D <- ggplot() + geom_point(aes(y=TS7.sal$data, x=TS7.sal$time), col= "#43b284", 
   geom_line( aes(x=TS1.sal$time, y=TS1.sal$data),col="darkblue", alpha=0.2) + 
   geom_vline(xintercept=TS1.sal$trend$cp[1],col="darkblue", alpha=0.5 , linetype="dashed", size=1) +
   xlim(1993,2022) + 
-  ylim(0,50) + ylab("Salinity (PSU)") + xlab("") + theme_light() + theme(text = element_text(size = 25))
+  ylim(0,50) + ylab("Salinity (PSU)") + xlab("") + theme_light() + theme(text = element_text(size = 25)) + annotate(geom="text", x=1995, y=50, hjust = 0, label="Marl Prairie", color="darkblue", size=7) +
+  annotate(geom="text", x=1995, y=44, hjust = 0, label="Scrub Mangrove", color="#43b284", size=7)
 
 
 # patchwork panelling for final figure ####
 
-png(filename = "Figure3_flow.Trend.png", 
+png(filename = "figures/Figure2_flow.Trend.png", 
     width = 8.75, height = 8, units = "in", res = 600, bg = "transparent") 
 
 A+ B+ C+ D + patchwork::plot_layout(nrow = 2, ncol = 2) & patchwork::plot_annotation(tag_levels = "A") &

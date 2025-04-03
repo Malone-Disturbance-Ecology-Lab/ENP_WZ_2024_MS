@@ -126,8 +126,14 @@ ts1.plot <- ggplot() +
 
 library(ggpubr)
 
-png(file="figures/Figure4_flow.gam.png",
-    width=800, height=300)
-ggarrange(ts1.plot, se1.plot,tsph7.plot,  ncol = 3, labels = c("A","B", "C"))
+
+source( "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/flow.durationFigure.R" )
+
+
+png(file="figures/Figure3_flow.gam.png",
+    width=800, height=600)
+ggarrange(ggarrange( plot.duration , labels="A"),
+ggarrange(ts1.plot, se1.plot,tsph7.plot,  ncol = 3, labels = c("B", "C","D")), nrow=2)
+
 dev.off()
 

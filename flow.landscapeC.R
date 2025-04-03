@@ -105,7 +105,7 @@ enp.se <- enp.se %>% st_make_valid() %>% st_transform(26917) %>% st_buffer(4000)
 enp.shade <- enp %>% st_transform(26917) %>% st_difference(enp.se)  
 
 veg$veg.p <- veg$veg
-veg.factor.df <- data.frame(value=c(2,3,1), veg= c("Freshwater Marl Praire",  "Brakish Ecotone","Saline Scrub Mangrove"))
+veg.factor.df <- data.frame(value=c(2,3,1), veg= c("Freshwater",  "Ecotone","Saline"))
 levels(veg$veg.p) <- veg.factor.df
 coltab(veg$veg.p) <- data.frame(value=c(2,3,1), col= c( "#000099", "#fab255","#43b284"))
 
@@ -115,7 +115,7 @@ plot(veg.se )
 
 ggplot() + geom_spatraster(data = veg$veg.p, na.rm = TRUE,show.legend = T) +  
   scale_fill_manual(na.value = "transparent", values= c("#43b284", "#000099", "#fab255"),
-                    labels =c("Freshwater Marl Praire",  "Brakish Ecotone","Saline Scrub Mangrove", ""))+
+                    labels =c("Freshwater",  "Ecotone","Saline"))+
   labs( fill="" ) +
   geom_spatraster_contour(data = dist.fwm_raster, breaks =seq(1, 50, 1.5), na.rm = TRUE, col="lightblue4")+
   geom_sf(data= enp.shade, alpha=0.5, col="transparent") + theme_bw()
@@ -123,13 +123,13 @@ ggplot() + geom_spatraster(data = veg$veg.p, na.rm = TRUE,show.legend = T) +
 
 simulation.1 <- ggplot() + geom_spatraster(data = veg$veg.p, na.rm = TRUE,show.legend = T) +  
   scale_fill_manual(na.value = "transparent", values= c("#43b284", "#000099", "#fab255"),
-                    labels =c("Freshwater Marl Praire",  "Brakish Ecotone","Saline Scrub Mangrove", ""))+
+                    labels =c("Freshwater",  "Ecotone","Saline"))+
   labs( fill="" ) +
   geom_spatraster_contour(data = dist.fwm_raster, breaks =seq(1, 50, 1.5), na.rm = TRUE, col="lightblue4")+
   geom_sf(data= enp.shade, alpha=0.5, col="transparent") + theme_bw()
 
-writeRaster( veg, 'data/landscapeC.tif')
-writeRaster( dist.fwm_raster, 'data/landscapeC_dist.tif')
+writeRaster( veg, 'data/landscapeC.tif',overwrite=TRUE)
+writeRaster( dist.fwm_raster, 'data/landscapeC_dist.tif', overwrite=TRUE)
 save(enp.shade,  file='data/Landscape_C.RDATA')
 
 png(file="/Volumes/MaloneLab/Research/ENP/The Whitezone/WL+SAL/Figures/Simulation_2024.png", width     =4.8,
@@ -161,7 +161,6 @@ veg$veg.gC.century[veg$veg2 == 3] <- -81*1000000
 
 # Subset information for the southeastern saline everglades:
 
-
 enp.se <- read_sf("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles/Southeastern Everglades_AOI.kml" ) 
 
 veg.se <- terra::crop(veg, enp.se) %>% terra::mask( enp.se)
@@ -191,3 +190,6 @@ sum( veg.se$veg.gC.century[ veg.se$veg2 == 1], na.rm=T)/ 1000000000 # in meteric
 sum( veg.se$veg.gC.century[ veg.se$veg2 == 3], na.rm=T)/ 1000000000 # in meteric ton of carbon
 
 1-115/131
+
+write_sf( enp.shade,"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/ENP_WZ_2024_MS/data/shapefiles/SE-Shade.shp" )
+

@@ -565,7 +565,7 @@ cc.100 <- rbind(lrc.predictions.ts1[which( lrc.predictions.ts1$group == '75-100%
 
 
 
-
+# Figure 4 ####
 cc0.lrc.p <- ggplot( data =cc.0 ) + 
   geom_line( aes( x= PAR, y =Estimate, color=site, linetype=group), size=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
@@ -582,7 +582,7 @@ cc0.lrc.p <- ggplot( data =cc.0 ) +
 
 
 cc25.lrc.p <- ggplot( data =cc.25 ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size=1) +
+  geom_line( aes( x= PAR, y =Estimate, group=site, color=site), size=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
   ylab(expression(paste('NEE'[day], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
   xlab(expression(paste( 'PAR (', mu, 'mol m'^-2, 's'^-1, ')' ))) + ylim(-9, 5) +
@@ -597,7 +597,7 @@ cc25.lrc.p <- ggplot( data =cc.25 ) +
 
 
 cc50.lrc.p <- ggplot( data =cc.50 ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size=1) +
+  geom_line( aes( x= PAR, y =Estimate, group=site, color=site), size=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15) +
   ylab(expression(paste('NEE'[day], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
   xlab(expression(paste( 'PAR (', mu, 'mol m'^-2, 's'^-1, ')' ))) + ylim(-9, 5) +
@@ -611,7 +611,7 @@ cc50.lrc.p <- ggplot( data =cc.50 ) +
         text = element_text(size=18))
 
 cc75.lrc.p <- ggplot( data =cc.75 ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size=1) +
+  geom_line( aes( x= PAR, y =Estimate, group=site, color=site), size=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
   ylab(expression(paste('NEE'[day], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
   xlab(expression(paste( 'PAR (', mu, 'mol m'^-2, 's'^-1, ')' ))) + ylim(-9, 5) +
@@ -627,14 +627,10 @@ cc75.lrc.p <- ggplot( data =cc.75 ) +
 
 
 
- 
+# Make a label
 cc.df <- rbind(cc.0,cc.25,cc.50,cc.75)
-
-unique(cc.df$site)
 cc.df$group <- factor(cc.df$group, levels = c("0%", "0-25%", "25-50%", "50-75%","75-100%") )
 cc.df$site <- factor(cc.df$site, levels=c("TS1", "SE1","TS7"))
-
-
 
 legend.p <- ggplot( data = cc.df ) + 
   geom_line( aes( x= PAR, y =Estimate, color=site, linetype=group), size=1) + scale_color_manual(values = c("#000099","#fab255", "#43b284"),labels=c('Freshwater Marl Praire','Brackish Ecotone', 'Saline Scrub Mangrove')) +
@@ -651,11 +647,11 @@ leg <- get_legend(legend.p)
 as_ggplot(leg)
 
 
-png('figures/Figure5_flow.MLM.png',width = 900, height = 625,)
-ggarrange( as_ggplot(leg), cc0.lrc.p, cc25.lrc.p,
+png('figures/Figure4_flow.MLM.png',width = 625, height = 625,)
+ggarrange( cc0.lrc.p, cc25.lrc.p,
            cc50.lrc.p, cc75.lrc.p, font.label = list(size = 18),
-           labels =c('','A', 'B', 'C',
-                     'D', 'E'),nrow=2, ncol=3)
+           labels =c('A', 'B', 'C',
+                     'D', 'E'),nrow=2, ncol=2)
 dev.off()
 
 
@@ -784,6 +780,8 @@ cc.100.trc <- rbind(trc.predictions.ts1[which( trc.predictions.ts1$group == '75-
                     trc.predictions.TS7[which( trc.predictions.TS7$group == '75-100%'),])
 
 
+# I removed linetype = group
+
 cc0.trc.p <- ggplot( data =cc.0.trc ) + 
   geom_line( aes( x= PAR, y =Estimate, color=site, linetype=group), size=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 )  +
@@ -800,7 +798,7 @@ cc0.trc.p <- ggplot( data =cc.0.trc ) +
 
 
 cc25.trc.p <- ggplot( data =cc.25.trc ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size=1) +
+  geom_line( aes( x= PAR, y =Estimate, group=site, color=site), size=1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
   xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-15,25) +
@@ -815,7 +813,7 @@ cc25.trc.p <- ggplot( data =cc.25.trc ) +
 
 
 cc50.trc.p <- ggplot( data =cc.50.trc ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size = 1) +
+  geom_line( aes( x= PAR, y =Estimate, group=site, color=site), size = 1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15) +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
   xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-15,25) +
@@ -829,7 +827,7 @@ cc50.trc.p <- ggplot( data =cc.50.trc ) +
         text = element_text(size=18))
 
 cc75.trc.p <- ggplot( data =cc.75.trc ) + 
-  geom_line( aes( x= PAR, y =Estimate, group=site, color=site, linetype=group), size = 1) +
+  geom_line( aes( x= PAR, y =Estimate, group=site, color=site), size = 1) +
   geom_ribbon(aes( x= PAR, ymin = Estimate-Error, ymax= Estimate +Error, fill=site), alpha=0.15 ) +
   ylab(expression(paste('NEE'[night], ' (', mu, 'mol m'^-2, 's'^-1, ')' ))) +
   xlab(expression(paste( 'TA ('^ degree, 'C)' ))) + ylim(-15,25) +
@@ -850,11 +848,11 @@ unique(cc.trc.df$site)
 cc.trc.df$group <- factor(cc.trc.df$group, levels = c("0%", "0-25%", "25-50%", "50-75%","75-100%") )
 cc.trc.df$site <- factor(cc.trc.df$site, levels=c("TS1", "SE1","TS7"))
 
-png('figures/Figure6_flow.MLM.png',width = 900, height = 625,)
-ggarrange( as_ggplot(leg), cc0.trc.p, cc25.trc.p,
+png('figures/Figure5_flow.MLM.png',width = 625, height = 625,)
+ggarrange( cc0.trc.p, cc25.trc.p,
            cc50.trc.p, cc75.trc.p, font.label = list(size = 18),
-           labels =c('','A', 'B', 'C',
-                     'D'),nrow=2, ncol=3)
+           labels =c('A', 'B', 'C',
+                     'D'),nrow=2, ncol=2)
 dev.off()
 
 
