@@ -1,8 +1,6 @@
-# ENP_WZ_2024_MS
+# Sea-level rise and freshwater management are reshaping coastal ecosystems
 
-This workflow produces the results of the manuscript in preparation:
-
-Sea-level rise and freshwater management are reshaping coastal ecosystems
+Along low-elevation coastlines, sea-level rise (SLR) threatens to salinate ecosystems. To understand the effects of SLR and freshwater management on landscape carbon (C) exchange, we measured the net ecosystem exchange of CO2 (NEE) between subtropical wetland ecosystems and the atmosphere along a dynamic salinity gradient. Ecosystems were representative of freshwater marl prairies, brackish ecotones, and saline scrub mangrove forests in the southeastern Everglades. This project uses disequilibrium dynamics to understand landscape-level transitions and their implications for carbon capture.
 
 ## Scripts:
 - (1) flow.site.maps.R - produces figure 1 (flow.site.maps.png; Lines +144), the site map for the manuscript.

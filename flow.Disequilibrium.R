@@ -127,7 +127,9 @@ debt$Debt[debt$eco == "Scrub Mangrove"]<- 0.004# show up a tiny bit
 
 debt$eco <- factor(debt$eco , levels = c( "Marl Prairie","Ecotone", "Scrub Mangrove" ))
 
-debt.plot <- debt %>% ggplot() + geom_col(aes( x= eco, y = Debt, fill=site)) + theme_bw() +scale_fill_manual(values=c( "#fab255","darkblue", "#43b284")) + ylab("Climate Debt") + xlab("") + theme(text = element_text(size = 20),axis.text=element_text(size=18))+  theme(legend.position="none")
+debt.plot <- debt %>% ggplot() + geom_col(aes( x= eco, y = Debt, fill=site)) + 
+  theme_bw() +scale_fill_manual(values=c( "#fab255","darkblue", "#43b284")) +
+  ylab("Climate Debt (m)") + xlab("") + theme(text = element_text(size = 20),axis.text=element_text(size=18))+  theme(legend.position="none")
 
 
 
@@ -139,8 +141,9 @@ plot.ts1.dde <- ts1.gf.opt %>% group_by(Date) %>% summarise(NEE.gc = sum(NEE.gc)
   ggplot() + geom_line( aes(x=Date , y=cumsum( NEE.gc)), col="darkblue",linewidth=2) +
   geom_line( aes(x=Date , y=cumsum( NEE.Modeled.opt.gc)), col="darkblue", linetype = "dotted",linewidth=2) + theme_bw() + xlab("") + 
   ylab(expression(paste('NEE ( g C  m'^2, ' day'^-1, ')'))) + theme(text = element_text(size = 20),axis.text=element_text(size=20) , axis.text.x=element_text(angle = 0, vjust = 1, hjust = 1))+
-  scale_x_date(date_breaks = "3 month", date_labels = "%b")
+  scale_x_date(date_breaks = "3 month", date_labels = "%b") 
 
+ts1.gf.opt$Date
 se1.gf.opt$Date <- se1.gf.opt$TIMESTAMP %>% as.Date
 
 plot.se1.dde <- se1.gf.opt %>% group_by(Date) %>% summarise(NEE.gc = sum(NEE.gc) , NEE.Modeled.opt.gc = sum(NEE.Modeled.opt.gc)) %>%  

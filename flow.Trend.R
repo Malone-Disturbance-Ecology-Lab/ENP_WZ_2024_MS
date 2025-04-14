@@ -316,11 +316,11 @@ write.csv( final.cp.summary, "final.cp.summary.csv")
 
 load("/Users/sm3466/Dropbox (YSE)/Research/ENP_WZ_2024_MS/flow.Trend.RDATA")
 
-A <- ggplot() + geom_point(aes(y=ENPHC$data, x=ENPHC$time), col= "#43b284", alpha=0.2, size=3) +
+A <- ggplot() + geom_point(aes(y=ENPHC$data, x=ENPHC$time), col= "#43b284", alpha=0.2, size=3, shape =17) +
   geom_line( aes(x=ENPHC$time, y=ENPHC$trend$Y), col= "#43b284", size=2.0) +
   geom_line( aes(x=ENPHC$time, y=ENPHC$data),col= "#43b284", alpha=0.2) + 
   geom_vline(xintercept=ENPHC$trend$cp[1],col= "#43b284", alpha=0.5 , linetype="dashed", size=1) +
-  geom_point(aes(y=NPEV8$data, x=NPEV8$time), col="darkblue", alpha=0.2, size=3) +
+  geom_point(aes(y=NPEV8$data, x=NPEV8$time), col="darkblue", alpha=0.2, size=3, shape =17) +
   geom_line( aes(x=NPEV8$time, y=NPEV8$trend$Y), col="darkblue", size=2.0) +
   geom_line( aes(x=NPEV8$time, y=NPEV8$data),col="darkblue", alpha=0.2) + 
   geom_vline(xintercept=NPEV8$trend$cp[1:2],col="darkblue", alpha=0.5 , linetype="dashed", size=1) +
@@ -343,7 +343,7 @@ B <- ggplot() + geom_point(aes(y=TS7$data, x=TS7$time), col= "#43b284", alpha=0.
   ylab("Water Level (m)") + xlab("") + theme_light() + theme(text = element_text(size = 25))
 
 # make SAL plots for panel ####
-C <- ggplot() + geom_point(aes(y=ENPHC.sal$data, x=ENPHC.sal$time), col="#43b284", alpha=0.2, size=3) +
+C <- ggplot() + geom_point(aes(y=ENPHC.sal$data, x=ENPHC.sal$time), col="#43b284", alpha=0.2, size=3, shape =17) +
   geom_line( aes(x=ENPHC.sal$time, y=ENPHC.sal$trend$Y), col="#43b284", size=2.0) +
   geom_line( aes(x=ENPHC.sal$time, y=ENPHC.sal$data),col="#43b284", alpha=0.2) + 
   geom_vline(xintercept=ENPHC$trend$cp[1:2],col="#43b284", alpha=0.5 , linetype="dashed", size=1) +
